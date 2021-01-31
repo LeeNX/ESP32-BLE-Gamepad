@@ -3,6 +3,7 @@
 #include "sdkconfig.h"
 #if defined(CONFIG_BT_ENABLED)
 
+#include "GamepadOutputCallbacks.h"
 #include "BleConnectionStatus.h"
 #include "BLEHIDDevice.h"
 #include "BLECharacteristic.h"
@@ -113,9 +114,11 @@ private:
   int16_t _hat4;
   bool _autoReport;
   
+  GamepadOutputCallbacks* gamepadOutputCallBack;
   BleConnectionStatus* connectionStatus;
   BLEHIDDevice* hid;
   BLECharacteristic* inputGamepad;
+  BLECharacteristic* outputGamepad;
   void buttons(uint64_t b);
   void rawAction(uint8_t msg[], char msgSize);
   static void taskServer(void* pvParameter);
@@ -148,6 +151,7 @@ public:
   void setSlider2(uint16_t slider2 = 0);
   void setAutoReport(bool autoReport = true);
   void sendReport();
+  void setLedChangeCallBack(void (*func)(PlayerLeds*));
   bool isPressed(uint64_t b = BUTTON_1); // check BUTTON_1 by default
   bool isConnected(void);
   void setBatteryLevel(uint8_t level);

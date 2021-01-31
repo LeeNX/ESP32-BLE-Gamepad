@@ -4,11 +4,12 @@
 #include "BLE2902.h"
 #include "BLEHIDDevice.h"
 #include "HIDTypes.h"
-#include "HIDKeyboardTypes.h"
+//#include "HIDKeyboardTypes.h"
 #include <driver/adc.h>
 #include "sdkconfig.h"
 
 #include "BleConnectionStatus.h"
+#include "GamepadOutputCallbacks.h"
 #include "BleGamepad.h"
 
 #if defined(CONFIG_ARDUHAL_ESP_LOG)
@@ -35,6 +36,18 @@ static const uint8_t _hidReportDescriptor[] = {
   REPORT_SIZE(1),      0x01, //     REPORT_SIZE (1)
   REPORT_COUNT(1),     0x40, //     REPORT_COUNT (64)
   HIDINPUT(1),         0x02, //     INPUT (Data, Variable, Absolute) ;64 button bits
+
+  // ------------------------------------------------- Player 1 to 4 leds
+  REPORT_COUNT(1),     0x04,          //   REPORT_COUNT (4) ; 4 bits (Player 1, Player 2, Player 3, Player 4)
+  REPORT_SIZE(1),      0x01,          //   REPORT_SIZE (1)
+  USAGE_PAGE(1),       0x08,          //   USAGE_PAGE (LEDs)
+  USAGE_MINIMUM(1),    0x61,          //   USAGE_MINIMUM (0x61) ; Player 1
+  USAGE_MAXIMUM(1),    0x64,          //   USAGE_MAXIMUM (0x64) ; Player 4
+  HIDOUTPUT(1),        0x02,          //   OUTPUT (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
+  REPORT_COUNT(1),     0x01,          //   REPORT_COUNT (1) ; 4 bits (Padding)
+  REPORT_SIZE(1),      0x04,          //   REPORT_SIZE (4)
+  HIDOUTPUT(1),        0x01,          //   OUTPUT (Const,Array,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
+
   // ------------------------------------------------- X/Y position, Z/rZ position
   USAGE_PAGE(1), 	   0x01, //		USAGE_PAGE (Generic Desktop)
   COLLECTION(1), 	   0x00, //		COLLECTION (Physical)
@@ -47,6 +60,7 @@ static const uint8_t _hidReportDescriptor[] = {
   REPORT_SIZE(1), 	   0x10, //		REPORT_SIZE (16)
   REPORT_COUNT(1), 	   0x04, //		REPORT_COUNT (4)
   HIDINPUT(1), 		   0x02, //     INPUT (Data,Var,Abs)
+
   // ------------------------------------------------- Triggers
   USAGE(1),            0x33, //     USAGE (rX) Left Trigger
   USAGE(1),            0x34, //     USAGE (rY) Right Trigger
@@ -55,6 +69,7 @@ static const uint8_t _hidReportDescriptor[] = {
   REPORT_SIZE(1),      0x10, //     REPORT_SIZE (16)
   REPORT_COUNT(1),     0x02, //     REPORT_COUNT (2)
   HIDINPUT(1),         0x02, //     INPUT (Data, Variable, Absolute) ;4 bytes (X,Y,Z,rZ)
+
   // ------------------------------------------------- Sliders
   USAGE(1),            0x36, //     USAGE (Slider) Slider 1
   USAGE(1),            0x36, //     USAGE (Slider) Slider 2
@@ -64,7 +79,8 @@ static const uint8_t _hidReportDescriptor[] = {
   REPORT_COUNT(1),     0x02, //     REPORT_COUNT (2)
   HIDINPUT(1),         0x02, //     INPUT (Data, Variable, Absolute) ;20 bytes (slider 1 and slider 2)
   END_COLLECTION(0),		 //     END_COLLECTION
-  // ------------------------------------------------- Hats  
+
+  // ------------------------------------------------- Hats
   USAGE_PAGE(1),       0x01, //     USAGE_PAGE (Generic Desktop)
   USAGE(1), 0x39,			 //     Usage (Hat Switch) Hat 4
   USAGE(1), 0x39,			 //     Usage (Hat Switch) Hat 3
@@ -360,6 +376,11 @@ void BleGamepad::setAutoReport(bool autoReport)
 	_autoReport = autoReport;
 }
 
+void BleGamepad::setLedChangeCallBack(void (*func)(PlayerLeds*))
+{
+  gamepadOutputCallBack->func = func;
+}
+
 bool BleGamepad::isPressed(uint64_t b)
 {
   if ((b & _buttons) > 0)
@@ -388,7 +409,13 @@ void BleGamepad::taskServer(void* pvParameter)
 
   BleGamepadInstance->hid = new BLEHIDDevice(pServer);
   BleGamepadInstance->inputGamepad = BleGamepadInstance->hid->inputReport(0); // <-- input REPORTID from report map
+  BleGamepadInstance->outputGamepad = BleGamepadInstance->hid->outputReport(0);
   BleGamepadInstance->connectionStatus->inputGamepad = BleGamepadInstance->inputGamepad;
+  BleGamepadInstance->connectionStatus->outputGamepad = BleGamepadInstance->outputGamepad;
+
+  BleGamepadInstance->gamepadOutputCallBack = new GamepadOutputCallbacks();
+  BleGamepadInstance->outputGamepad->setCallbacks(BleGamepadInstance->gamepadOutputCallBack);
+//  BleGamepadInstance->outputGamepad->setCallbacks(new GamepadOutputCallbacks());
 
   BleGamepadInstance->hid->manufacturer()->setValue(BleGamepadInstance->deviceManufacturer);
 
@@ -407,6 +434,7 @@ void BleGamepad::taskServer(void* pvParameter)
   BLEAdvertising *pAdvertising = pServer->getAdvertising();
   pAdvertising->setAppearance(HID_GAMEPAD);
   pAdvertising->addServiceUUID(BleGamepadInstance->hid->hidService()->getUUID());
+  //pAdvertising->setScanResponse(false);
   pAdvertising->start();
   BleGamepadInstance->hid->setBatteryLevel(BleGamepadInstance->batteryLevel);
 

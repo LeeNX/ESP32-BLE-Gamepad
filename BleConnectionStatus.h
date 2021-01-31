@@ -15,6 +15,7 @@ public:
   void onConnect(BLEServer* pServer);
   void onDisconnect(BLEServer* pServer);
   BLECharacteristic* inputGamepad;
+  BLECharacteristic* outputGamepad;
 };
 
 #endif // CONFIG_BT_ENABLED

@@ -3,6 +3,8 @@ Bluetooth LE Gamepad library for the ESP32
 
 This library allows you to make the ESP32 act as a Bluetooth Gamepad and control what it does. E.g. move axes and press buttons
 
+Adding Player LED Support Feedback and teting info.
+
 ## Features
 
  - [x] Button press (64 buttons)
@@ -83,10 +85,3 @@ By default the battery level will be set to 100%, the device name will be `ESP32
 Credits to [T-vK](https://github.com/T-vK) as this library is based on his ESP32-BLE-Mouse library (https://github.com/T-vK/ESP32-BLE-Mouse) that he provided.
 
 Credits to [chegewara](https://github.com/chegewara) as the ESP32-BLE-Mouse library is based on [this piece of code](https://github.com/nkolban/esp32-snippets/issues/230#issuecomment-473135679) that he provided.
-
-## Notes
-Use [this](http://www.planetpointy.co.uk/joystick-test-application/) Windows test app to test/see all of the buttons
-
-You might also be interested in:
-- [ESP32-BLE-Mouse](https://github.com/T-vK/ESP32-BLE-Mouse)
-- [ESP32-BLE-Keyboard](https://github.com/T-vK/ESP32-BLE-Keyboard)

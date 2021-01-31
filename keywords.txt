@@ -47,6 +47,7 @@ setSlider	KEYWORD2
 setSliders	KEYWORD2
 setAutoReport	KEYWORD2
 sendReport	KEYWORD2
+setLedChangeCallBack	KEYWORD2
 
 #######################################
 # Constants
