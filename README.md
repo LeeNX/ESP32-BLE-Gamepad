@@ -1,9 +1,23 @@
+# NAME CHANGE IN LIBRARAY MANAGER - PLEASE READ
+Hi all DIY gaming enthusiasts.
+Please be aware that the official name for this library in the library manager has changed from
+	
+	ESP32 BLE Gamepad  -->  ESP32-BLE-Gamepad
+
+This is to make it consistent with those who were also downloading it from GitHub and had 2 versions with different names and was leading to confusion.
+The library manager was automatically renaming the folder ESP32_BLE_Gamepad upon installation bue to the spaces in the name. The library with the old name has been de-listed from the manager and only the new one remains.
+Please remove/delete the old version by deleting the ESP32_BLE_Gamepad folder within your libraries folder.
+
+Apologies for the early adopters, but it will save a lot of confusion moving forward.
+
 # ESP32-BLE-Gamepad
 Bluetooth LE Gamepad library for the ESP32
 
 This library allows you to make the ESP32 act as a Bluetooth Gamepad and control what it does. E.g. move axes and press buttons
 
 Adding Player LED Support Feedback and teting info.
+=======
+Due to popular demand, it supports a large array of buttons and axes. You only need to wire up the amount you'd like to use in your project. If you need more GPIO on your ESP32, you should search "Arduino GPIO expander". The i2c bus (uses just 2 GPIO pins) can be used to add multiple GPIO expanders to add all the GPIO you would ever need. 
 
 ## Features
 
