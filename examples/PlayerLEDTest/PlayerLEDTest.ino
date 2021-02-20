@@ -1,4 +1,4 @@
-/*
+  /*
  * A simple sketch that maps a single pin on the ESP32 to a single button on the controller
  */
 
@@ -46,6 +46,18 @@ void loop()
   if(bleGamepad.isConnected()) 
   {
 
+    Serial.println("Press all buttons one by one");
+    for(int i = 0 ; i < 8 ; i += 1)
+    {
+      Serial.println("Pressing Button");
+      bleGamepad.press(pow(2, i));
+      delay(100);
+      Serial.println("Releasing Button");
+      bleGamepad.release(pow(2, i));
+      delay(25);
+    }
+
+    Serial.println("LED1");
     Serial.println(PlayerLED1);
 
     int currentButton1State = digitalRead(2);
