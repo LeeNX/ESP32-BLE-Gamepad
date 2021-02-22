@@ -419,7 +419,11 @@ void BleGamepad::taskServer(void* pvParameter)
 
   BleGamepadInstance->hid->manufacturer()->setValue(BleGamepadInstance->deviceManufacturer);
 
+  // From GATT Specification Supplement 3 - 3.150 PnP ID - https://www.bluetooth.com/wp-content/uploads/Sitecore-Media-Library/Gatt/Xml/Characteristics/org.bluetooth.characteristic.pnp_id.xml
+  // Vendor ID Source, Vendor ID, Product ID, Product Version - both ID's look byte swapped
   BleGamepadInstance->hid->pnp(0x01,0x02e5,0xabbb,0x0110);
+
+  // Country Code and Flag - https://www.bluetooth.com/wp-content/uploads/Sitecore-Media-Library/Gatt/Xml/Characteristics/org.bluetooth.characteristic.hid_information.xml
   BleGamepadInstance->hid->hidInfo(0x00,0x01);
 
   BLESecurity *pSecurity = new BLESecurity();
