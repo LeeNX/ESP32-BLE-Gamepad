@@ -10,11 +10,11 @@
 
 //ESP_LOGI(LOG_TAG, "Callbacks file included");
 
-GamepadOutputCallbacks::GamepadOutputCallbacks(void) {
+BleGamepadOutputCallbacks::BleGamepadOutputCallbacks(void) {
   ESP_LOGI(LOG_TAG, "Callbacks initialised");
 }
 
-void GamepadOutputCallbacks::onWrite(BLECharacteristic* me) {
+void BleGamepadOutputCallbacks::onWrite(NimBLECharacteristic* me) {
   uint8_t* value = (uint8_t*)(me->getValue().c_str());
   ESP_LOGI(LOG_TAG, "leds: %d", *value);
   ESP_LOGI(LOG_TAG, "Callbacks written to");
