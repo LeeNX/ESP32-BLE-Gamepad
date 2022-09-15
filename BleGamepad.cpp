@@ -8,6 +8,7 @@
 #include "sdkconfig.h"
 
 #include "BleConnectionStatus.h"
+#include "BleGamepadOutputCallbacks.h"
 #include "BleGamepad.h"
 #include "BleGamepadConfiguration.h"
 
@@ -299,6 +300,48 @@ void BleGamepad::begin(BleGamepadConfiguration *config)
         } // Padding Bits Needed
 
     } // Special Buttons
+
+// 0x95, 0x01,   /*   REPORT_COUNT (1) */? 8
+// 0x75, 0x08,   /*   REPORT_SIZE (8 */? 1
+// 0x05, 0x08,   /*   USAGE_PAGE (LEDs) */
+// 0x19, 0x61,   /*   USAGE_MINIMUM () - 0x61 Player 1*/
+// 0x29, 0x68,   /*   USAGE_MAXIMUM () - 0x68 Player 8 */
+// 0x15, 0x00,   /*   LOGICAL_MINIMUM (0) */
+// 0x25, 0x01,   /*   LOGICAL_MAXIMUM (1) */
+// 0x91, 0x02,   /*   OUTPUT (Data,Var,Abs) */
+
+    // REPORT_COUNT (# of LEDs)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x95;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x08;
+
+    // REPORT_SIZE (1)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x75;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x01;
+
+    // USAGE_PAGE (LEDs)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x05;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x08;
+
+    // USAGE_MINIMUM (Player 1)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x19;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x61;
+
+    // USAGE_MAXIMUM (Player 8)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x29;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x68;
+
+    // LOGICAL_MINIMUM (0)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x15;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x00;
+
+    // LOGICAL_MAXIMUM (1)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x25;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x01;
+
+    // OUTPUT (Data,Var,Abs)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x91;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x02;
+
 
     if (configuration.getAxisCount() > 0)
     {
@@ -1332,6 +1375,10 @@ void BleGamepad::taskServer(void *pvParameter)
     BleGamepadInstance->hid = new NimBLEHIDDevice(pServer);
     BleGamepadInstance->inputGamepad = BleGamepadInstance->hid->inputReport(BleGamepadInstance->configuration.getHidReportId()); // <-- input REPORTID from report map
     BleGamepadInstance->connectionStatus->inputGamepad = BleGamepadInstance->inputGamepad;
+
+    BleGamepadInstance->outputGamepad = BleGamepadInstance->hid->outputReport(BleGamepadInstance->configuration.getHidReportId()); // <-- output REPORTID from report map
+    BleGamepadInstance->connectionStatus->outputGamepad = BleGamepadInstance->outputGamepad;
+    BleGamepadInstance->outputGamepad->setCallbacks(new BleGamepadOutputCallbacks());
 
     BleGamepadInstance->hid->manufacturer()->setValue(BleGamepadInstance->deviceManufacturer);
 

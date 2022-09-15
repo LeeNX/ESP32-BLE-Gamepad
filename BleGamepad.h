@@ -40,6 +40,7 @@ private:
 
     NimBLEHIDDevice *hid;
     NimBLECharacteristic *inputGamepad;
+    NimBLECharacteristic *outputGamepad;
 
     void rawAction(uint8_t msg[], char msgSize);
     static void taskServer(void *pvParameter);
