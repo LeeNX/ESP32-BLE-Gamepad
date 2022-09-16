@@ -1,12 +1,12 @@
 #include "BleGamepadOutputCallbacks.h"
 
-//#if defined(CONFIG_ARDUHAL_ESP_LOG)
-//  #include "esp32-hal-log.h"
-//  #define LOG_TAG ""
-//#else
-//  #include "esp_log.h"
-//  static const char* LOG_TAG = "BLEDevice";
-//#endif
+#if defined(CONFIG_ARDUHAL_ESP_LOG)
+  #include "esp32-hal-log.h"
+  #define LOG_TAG "BLEGamepad"
+#else
+  #include "esp_log.h"
+  static const char *LOG_TAG = "BLEGamepad";
+#endif
 
 //ESP_LOGI(LOG_TAG, "Callbacks file included");
 
