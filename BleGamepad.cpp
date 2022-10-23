@@ -435,18 +435,18 @@ void BleGamepad::begin(BleGamepadConfiguration *config)
         tempHidReportDescriptor[hidReportDescriptorSize++] = 0x16;
         tempHidReportDescriptor[hidReportDescriptorSize++] = lowByte(configuration.getSimulationMin());
         tempHidReportDescriptor[hidReportDescriptorSize++] = highByte(configuration.getSimulationMin());
-        //tempHidReportDescriptor[hidReportDescriptorSize++] = 0x00;		// Use these two lines for 0 min
+        //tempHidReportDescriptor[hidReportDescriptorSize++] = 0x00;        // Use these two lines for 0 min
         //tempHidReportDescriptor[hidReportDescriptorSize++] = 0x00;
-		//tempHidReportDescriptor[hidReportDescriptorSize++] = 0x01;	    // Use these two lines for -32767 min
+        //tempHidReportDescriptor[hidReportDescriptorSize++] = 0x01;        // Use these two lines for -32767 min
         //tempHidReportDescriptor[hidReportDescriptorSize++] = 0x80;
 
         // LOGICAL_MAXIMUM (+32767)
         tempHidReportDescriptor[hidReportDescriptorSize++] = 0x26;
         tempHidReportDescriptor[hidReportDescriptorSize++] = lowByte(configuration.getSimulationMax());
         tempHidReportDescriptor[hidReportDescriptorSize++] = highByte(configuration.getSimulationMax());
-        //tempHidReportDescriptor[hidReportDescriptorSize++] = 0xFF;	    // Use these two lines for 255 max
+        //tempHidReportDescriptor[hidReportDescriptorSize++] = 0xFF;        // Use these two lines for 255 max
         //tempHidReportDescriptor[hidReportDescriptorSize++] = 0x00;
-		//tempHidReportDescriptor[hidReportDescriptorSize++] = 0xFF;		// Use these two lines for +32767 max
+        //tempHidReportDescriptor[hidReportDescriptorSize++] = 0xFF;        // Use these two lines for +32767 max
         //tempHidReportDescriptor[hidReportDescriptorSize++] = 0x7F;
 
         // REPORT_SIZE (16)
@@ -1331,15 +1331,13 @@ bool BleGamepad::isConnected(void)
 
 void BleGamepad::setBatteryLevel(uint8_t level)
 {
-    /*
     this->batteryLevel = level;
     if (hid != 0){
         this->hid->setBatteryLevel(this->batteryLevel);
-	if (this->isConnected()){
-	    this->hid->batteryLevel()->notify();
-	}
+        if (this->isConnected()){
+            this->hid->batteryLevel()->notify();
+        }
     }
-    */
 }
 
 void BleGamepad::taskServer(void *pvParameter)
@@ -1350,7 +1348,7 @@ void BleGamepad::taskServer(void *pvParameter)
     // Compiler adds 0x02 to the last value of board's base MAC address to get the BT MAC address, so take 0x02 away from the value you actually want when setting
     //uint8_t newMACAddress[] = {0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF - 0x02};
     //esp_base_mac_addr_set(&newMACAddress[0]); // Set new MAC address 
-    
+
     NimBLEDevice::init(BleGamepadInstance->deviceName);
     NimBLEServer *pServer = NimBLEDevice::createServer();
     pServer->setCallbacks(BleGamepadInstance->connectionStatus);
@@ -1363,32 +1361,32 @@ void BleGamepad::taskServer(void *pvParameter)
     BleGamepadInstance->hid->manufacturer()->setValue(BleGamepadInstance->deviceManufacturer);
 
     NimBLEService *pService = pServer->getServiceByUUID(SERVICE_UUID_DEVICE_INFORMATION);
-	
-	BLECharacteristic* pCharacteristic_Model_Number = pService->createCharacteristic(
+
+    BLECharacteristic* pCharacteristic_Model_Number = pService->createCharacteristic(
       CHARACTERISTIC_UUID_MODEL_NUMBER,
       NIMBLE_PROPERTY::READ
     );
     pCharacteristic_Model_Number->setValue(modelNumber);
-	
-	BLECharacteristic* pCharacteristic_Software_Revision = pService->createCharacteristic(
+
+    BLECharacteristic* pCharacteristic_Software_Revision = pService->createCharacteristic(
       CHARACTERISTIC_UUID_SOFTWARE_REVISION,
       NIMBLE_PROPERTY::READ
     );
     pCharacteristic_Software_Revision->setValue(softwareRevision);
-	
-	BLECharacteristic* pCharacteristic_Serial_Number = pService->createCharacteristic(
+
+    BLECharacteristic* pCharacteristic_Serial_Number = pService->createCharacteristic(
       CHARACTERISTIC_UUID_SERIAL_NUMBER,
       NIMBLE_PROPERTY::READ
     );
     pCharacteristic_Serial_Number->setValue(serialNumber);
-	
-	BLECharacteristic* pCharacteristic_Firmware_Revision = pService->createCharacteristic(
+
+    BLECharacteristic* pCharacteristic_Firmware_Revision = pService->createCharacteristic(
       CHARACTERISTIC_UUID_FIRMWARE_REVISION,
       NIMBLE_PROPERTY::READ
     );
     pCharacteristic_Firmware_Revision->setValue(firmwareRevision);
-	
-	BLECharacteristic* pCharacteristic_Hardware_Revision = pService->createCharacteristic(
+
+    BLECharacteristic* pCharacteristic_Hardware_Revision = pService->createCharacteristic(
       CHARACTERISTIC_UUID_HARDWARE_REVISION,
       NIMBLE_PROPERTY::READ
     );
