@@ -272,3 +272,26 @@ dbus-send --print-reply=literal --system \
 ```bash
 sudo gatttool -b 28:37:37:1A:D3:CF -I
 ```
+
+```bash
+sudo ./hidapitester --vidpid E502:ABCD -l 2 --open --send-output 3,5
+Opening device, vid/pid: 0xE502/0xABCD
+Writing output report of 2-bytes...wrote 2 bytes:
+ 03 05
+Closing device
+```
+
+```
+< ACL Data TX: Handle 64 flags 0x00 dlen 8                                                    #18 [hci0] 2.573784
+      ATT: Write Request (0x12) len 3
+        Handle: 0x0027
+          Data: 05
+```
+```
+18:00:12.531 -> D NimBLECharacteristic: Characteristic 0x2a4d Write event
+18:00:12.531 -> D NimBLECharacteristic: >> setValue: length=1, data=05, characteristic UUID=0x2a4d
+18:00:12.531 -> D NimBLECharacteristic: << setValue
+18:00:12.531 -> [7877892][I][BleGamepadOutputCallbacks.cpp:19] onWrite(): [BLEGamepad] leds: 5
+18:00:12.531 -> [7877899][I][BleGamepadOutputCallbacks.cpp:20] onWrite(): [BLEGamepad] Callbacks written to
+18:00:12.568 -> D NimBLECharacteristicCallbacks: onWrite: default
+```
