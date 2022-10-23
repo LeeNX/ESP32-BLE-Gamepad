@@ -33,8 +33,8 @@ It would be great however if any improvements are fed back into this version.
  - [x] Special buttons (start, select, menu, home, back, volume up, volume down, volume mute) all disabled by default
  - [x] Configurable HID descriptor
  - [x] Configurable VID and PID values
- - [ ] Report optional battery level to host <-- currently disabled
- - [x] Customize Bluetooth device name/manufacturer
+ - [x] Configurable BLE characteristics (name, manufacturer, model number, software revision, serial number, firmware revision, hardware revision)
+ - [ ] Report optional battery level to host <-- currently disabled <-- awaiting NimBLE support
  - [x] Uses efficient NimBLE bluetooth library
  - [x] Compatible with Windows
  - [x] Compatible with Android (Android OS maps default buttons / axes / hats slightly differently than Windows)
@@ -143,3 +143,132 @@ or the NimBLE versions at
 
 - [ESP32-NimBLE-Mouse](https://github.com/wakwak-koba/ESP32-NimBLE-Mouse)
 - [ESP32-NimBLE-Keyboard](https://github.com/wakwak-koba/ESP32-NimBLE-Keyboard)
+
+## Troubleshooting
+Raspberry Pi command line pairing and Troubleshooting
+```bash
+sudo hciconfig hci0 up
+sudo hcitool lescan
+sudo btmon
+
+sudo bluetoothctl
+  agent on
+  default-agent
+  pairable on
+  discoverable on
+
+sudo bluetoothctl scan on
+```
+Find the mac address for your device
+```bash
+sudo bluetoothctl trust 34:94:54:35:1D:F6
+```
+Then the next two command need to be run immediately after one another, else pairing might not be successful
+```bash
+sudo bluetoothctl pair 34:94:54:35:1D:F6 && \
+sudo bluetoothctl connect 34:94:54:35:1D:F6
+```
+Output would look a little like the following
+```
+[CHG] Device 34:94:54:35:1D:F6 Connected: yes
+[CHG] Device 34:94:54:35:1D:F6 UUIDs: 00001800-0000-1000-8000-00805f9b34fb
+[CHG] Device 34:94:54:35:1D:F6 UUIDs: 00001801-0000-1000-8000-00805f9b34fb
+[CHG] Device 34:94:54:35:1D:F6 UUIDs: 0000180a-0000-1000-8000-00805f9b34fb
+[CHG] Device 34:94:54:35:1D:F6 UUIDs: 0000180f-0000-1000-8000-00805f9b34fb
+[CHG] Device 34:94:54:35:1D:F6 UUIDs: 00001812-0000-1000-8000-00805f9b34fb
+[CHG] Device 34:94:54:35:1D:F6 ServicesResolved: yes
+[CHG] Device 34:94:54:35:1D:F6 Paired: yes
+[NEW] Primary Service (Handle 0x7d44)
+	/org/bluez/hci0/dev_34_94_54_35_1D_F6/service0006
+	00001801-0000-1000-8000-00805f9b34fb
+	Generic Attribute Profile
+[NEW] Characteristic (Handle 0x2f48)
+	/org/bluez/hci0/dev_34_94_54_35_1D_F6/service0006/char0007
+	00002a05-0000-1000-8000-00805f9b34fb
+	Service Changed
+[NEW] Descriptor (Handle 0x2f90)
+	/org/bluez/hci0/dev_34_94_54_35_1D_F6/service0006/char0007/desc0009
+	00002902-0000-1000-8000-00805f9b34fb
+	Client Characteristic Configuration
+[NEW] Primary Service (Handle 0x8b74)
+	/org/bluez/hci0/dev_34_94_54_35_1D_F6/service000a
+	0000180a-0000-1000-8000-00805f9b34fb
+	Device Information
+[NEW] Characteristic (Handle 0x2f48)
+	/org/bluez/hci0/dev_34_94_54_35_1D_F6/service000a/char000b
+	00002a50-0000-1000-8000-00805f9b34fb
+	PnP ID
+[NEW] Characteristic (Handle 0x2f48)
+	/org/bluez/hci0/dev_34_94_54_35_1D_F6/service000a/char000d
+	00002a29-0000-1000-8000-00805f9b34fb
+	Manufacturer Name String
+[NEW] Characteristic (Handle 0x2f48)
+	/org/bluez/hci0/dev_34_94_54_35_1D_F6/service000a/char000f
+	00002a24-0000-1000-8000-00805f9b34fb
+	Model Number String
+[NEW] Characteristic (Handle 0x2f48)
+	/org/bluez/hci0/dev_34_94_54_35_1D_F6/service000a/char0011
+	00002a28-0000-1000-8000-00805f9b34fb
+	Software Revision String
+[NEW] Characteristic (Handle 0x2f48)
+	/org/bluez/hci0/dev_34_94_54_35_1D_F6/service000a/char0013
+	00002a25-0000-1000-8000-00805f9b34fb
+	Serial Number String
+[NEW] Characteristic (Handle 0x2f48)
+	/org/bluez/hci0/dev_34_94_54_35_1D_F6/service000a/char0015
+	00002a26-0000-1000-8000-00805f9b34fb
+	Firmware Revision String
+[NEW] Characteristic (Handle 0x2f48)
+	/org/bluez/hci0/dev_34_94_54_35_1D_F6/service000a/char0017
+	00002a27-0000-1000-8000-00805f9b34fb
+	Hardware Revision String
+[NEW] Primary Service (Handle 0xa364)
+	/org/bluez/hci0/dev_34_94_54_35_1D_F6/service0026
+	0000180f-0000-1000-8000-00805f9b34fb
+	Battery Service
+[NEW] Characteristic (Handle 0x2f48)
+	/org/bluez/hci0/dev_34_94_54_35_1D_F6/service0026/char0027
+	00002a19-0000-1000-8000-00805f9b34fb
+	Battery Level
+[NEW] Descriptor (Handle 0x2f90)
+	/org/bluez/hci0/dev_34_94_54_35_1D_F6/service0026/char0027/desc0029
+	00002902-0000-1000-8000-00805f9b34fb
+	Client Characteristic Configuration
+[NEW] Descriptor (Handle 0x2f90)
+	/org/bluez/hci0/dev_34_94_54_35_1D_F6/service0026/char0027/desc002a
+	00002904-0000-1000-8000-00805f9b34fb
+	Characteristic Format
+Pairing successful
+Attempting to connect to 34:94:54:35:1D:F6
+Connection successful
+```
+Should then see a joystick endpoint ```/dev/input/js0```
+Joystick test using the following
+```bash
+sudo jstest /dev/input/js0
+````
+Should be able to get the battery level with
+```bash
+dbus-send --print-reply=literal --system \
+  --dest=org.bluez /org/bluez/hci0/dev_34_94_54_35_1D_F6 \
+  org.freedesktop.DBus.Properties.Get string:"org.bluez.Battery1" \
+  string:"Percentage"
+```
+```
+   variant       byte 44
+```
+Display BLE serial number:
+```bash
+dbus-send --print-reply=literal --system \
+  --dest=org.bluez /org/bluez/hci0/dev_34_94_54_35_1D_F6/service000a/char0013 \
+  org.freedesktop.DBus.Properties.Get \
+  string:"org.bluez.GattCharacteristic1" \
+  string:"Value"
+```
+```
+   variant       array of bytes "9876543210"
+```
+
+```bash
+sudo gatttool -b 28:37:37:1A:D3:CF -I
+```
