@@ -606,6 +606,205 @@ void BleGamepad::begin(BleGamepadConfiguration *config)
     // END_COLLECTION (Application)
     tempHidReportDescriptor[hidReportDescriptorSize++] = 0xc0;
 
+    // https://github.com/YukMingLaw/ArduinoJoystickWithFFBLibrary/issues/30
+    // USAGE_PAGE (Physical Interface)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x05;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x0F;
+
+  	// USAGE (Start Delay)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x09;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0xa7;
+
+  	// UNIT (Eng Lin:Time)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x66;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x03;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x10;
+
+  	// UNIT_EXPONENT (-3)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x55;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0xfd;
+
+  	// LOGICAL_MINIMUM (00)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x15;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x00;
+
+  	// LOGICAL_MAXIMUM (7F FF)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x26;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0xff;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x7f;
+
+  	// PHYSICAL_MINIMUM (00)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x35;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x00;
+
+  	// PHYSICAL_MAXIMUM (7F FF)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x46;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0xff;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x7f;
+
+  	// REPORT_SIZE (10)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x75;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x10;
+
+  	// REPORT_COUNT (01)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x95;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x01;
+
+  	// OUTPUT (Data,Var,Abs)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x91;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x02;
+
+  	// UNIT (None)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x66;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x00;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x00;
+
+    // UNIT_EXPONENT (00)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x55;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x00;
+
+    // https://github.com/YukMingLaw/ArduinoJoystickWithFFBLibrary/blob/master/src/FFBDescriptor.h
+
+    // PID State Report
+    // USAGE_PAGE (Physical Interface)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x05;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x0f;
+
+    // USAGE (PID State Report)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x09;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x92;
+
+    // COLLECTION (Logical)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0xa1;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x02;
+
+  	// REPORT_ID (02)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x85;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x02;
+
+  	// USAGE (Device Paused)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x09;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x9f;
+
+  	// USAGE (Actuators Enabled)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x09;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0xa0;
+
+  	// USAGE (Safety Switch)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x09;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0xa4;
+
+  	// USAGE (Actuator Override Switch)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x09;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0xa5;
+
+  	// USAGE (Actuator Power)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x09;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0xa6;
+
+  	// LOGICAL_MINIMUM (00)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x15;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x00;
+
+  	//  Logical Maximum (1)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x25;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x01;
+
+  	//  Physical Minimum (0)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x35;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x00;
+
+  	//  Physical Maximum (1)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x45;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x01;
+
+  	//  Report Size (1)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x75;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x01;
+
+  	//  Report Count (5)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x95;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x05;
+
+  	//  Input (variable,absolute)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x81;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x02;
+
+  	//  Report Count (3)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x95;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x03;
+
+  	//  Input (Constant, Variable)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x81;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x03;
+
+  	//  Usage (Effect Playing)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x09;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x94;
+
+  	//  Logical Minimum (0)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x15;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x00;
+
+  	//  Logical Maximum (1)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x25;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x01;
+
+  	//  Physical Minimum (0)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x35;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x00;
+
+  	//  Physical Maximum (1)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x45;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x01;
+
+  	//  Report Size (1)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x75;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x01;
+
+  	//  Report Count (1)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x95;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x01;
+
+  	//  Input (variable,absolute)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x81;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x02;
+
+  	//  Usage (Effect Block Index)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x09;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x22;
+
+  	//  Logical Minimum (1)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x15;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x01;
+
+  	//  Logical Maximum (40)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x25;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x28;
+
+  	//  Physical Minimum (1)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x35;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x01;
+
+  	//  Physical Maximum (40)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x45;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x28;
+
+  	//  Report Size (7)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x75;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x07;
+
+  	//  Report Count (1)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x95;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x01;
+
+  	//  Input (variable,absolute)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x81;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x02;
+
+    //End Collection Datalink (Logical) (OK)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0xc0;
+
     xTaskCreate(this->taskServer, "server", 20000, (void *)this, 5, NULL);
 }
 
@@ -1390,7 +1589,7 @@ void BleGamepad::taskServer(void *pvParameter)
     // Use the procedure below to set a custom Bluetooth MAC address
     // Compiler adds 0x02 to the last value of board's base MAC address to get the BT MAC address, so take 0x02 away from the value you actually want when setting
     //uint8_t newMACAddress[] = {0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF - 0x02};
-    //esp_base_mac_addr_set(&newMACAddress[0]); // Set new MAC address 
+    //esp_base_mac_addr_set(&newMACAddress[0]); // Set new MAC address
 
     NimBLEDevice::init(BleGamepadInstance->deviceName);
     NimBLEServer *pServer = NimBLEDevice::createServer();
