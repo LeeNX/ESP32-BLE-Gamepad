@@ -1267,6 +1267,149 @@ void BleGamepad::begin(BleGamepadConfiguration *config)
       //End Collection Datalink (Logical) (OK)
       tempHidReportDescriptor[hidReportDescriptorSize++] = 0xc0;
 
+        // SetEnvelopeReport
+        //Usage (Set Envelope Report)
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x09;
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x5a;
+
+        //Collection Datalink (Logical)
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0xa1;
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x02;
+
+      	//Report ID 2
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x85;
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x02;
+
+      	//  Usage (Effect Block Index)
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x09;
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x22;
+
+      	//   Logical Minimum (1)
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x15;
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x01;
+
+      	//   Logical Maximum (40)
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x25;
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x28;
+
+      	//   Physical Minimum (1)
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x35;
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x01;
+
+      	//   Physical Maximum (40)
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x45;
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x28;
+
+      	//   Report Size (8)
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x75;
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x08;
+
+      	//   Report Count (1)
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x95;
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x01;
+
+      	//   Output (Data,Var,Abs)
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x91;
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x02;
+
+      	//  Usage (Attack Level)
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x09;
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x5b;
+
+      	//  Usage (Fade Level)
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x09;
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x5d;
+
+      	//   Logical Minimum (0)
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x16;
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x00;
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x00;
+
+      	//   Logical Maximum (10000)
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x26;
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x10;
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x27;
+
+      	//   Physical Minimum (0)
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x36;
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x00;
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x00;
+
+      	//   Physical Maximum (10000)
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x46;
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x10;
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x27;
+
+      	//   Report Size (16)
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x75;
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x10;
+
+      	//   Report Count (2)
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x95;
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x02;
+
+      	//   Output (Data,Var,Abs)
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x91;
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x02;
+
+      	//  Usage (Attack Time)
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x09;
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x5c;
+
+      	//  Usage (Fade Time)
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x09;
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x5e;
+
+      	//   Unit (1003h) English Linear, Seconds
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x66;
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x03;
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x10;
+
+      	//   Unit Exponent (FDh) (X10^-3 ==> Milisecond)
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x55;
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0xfd;
+
+      	//   Logical Maximum (4294967295) - 0x27, 0xFF, 0x7F, 0, 0
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x27;
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0xff;
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x7f;
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x00;
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x00;
+
+      	//   Physical Maximum (4294967295) - 0x47, 0xFF, 0x7F, 0, 0
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x47;
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0xff;
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x7f;
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x00;
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x00;
+
+      	//   Report Size (16)
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x75;
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x20;
+
+      	//   Report Count (2)
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x95;
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x02;
+
+      	//   Output (Data,Var,Abs)
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x91;
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x02;
+
+      	//   Physical Maximum (0)
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x45;
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x00;
+
+      	//   Unit (0)
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x66;
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x00;
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x00;
+
+      	//   Unit Exponent (0)
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x55;
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0x00;
+
+        //End Collection Datalink (Logical) (OK)
+        tempHidReportDescriptor[hidReportDescriptorSize++] = 0xc0;
 
     xTaskCreate(this->taskServer, "server", 20000, (void *)this, 5, NULL);
 }
