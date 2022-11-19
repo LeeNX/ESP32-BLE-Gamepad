@@ -246,8 +246,33 @@ Should then see a joystick endpoint ```/dev/input/js0```
 Joystick test using the following
 ```bash
 sudo jstest /dev/input/js0
-````
-Noting the input event that appear with js0
+```
+Some really cool info - https://thehackerdiary.wordpress.com/2017/04/21/exploring-devinput-1/
+Can get info for input devices ```cat /proc/bus/input/devices```
+```bash
+
+I: Bus=0005 Vendor=e502 Product=abcd Version=1001
+N: Name="ESP32TestOrg"
+P: Phys=dc:a6:32:c2:ae:71
+S: Sysfs=/devices/virtual/misc/uhid/0005:E502:ABCD.012F/input/input304
+U: Uniq=34:94:54:35:1d:f6
+H: Handlers=event2 js0
+B: PROP=0
+B: EV=1b
+B: KEY=ffffffffffff 0 0 0 0 0 0 ffff000000000000 0 0 0 0
+B: ABS=3007f
+B: MSC=10
+```
+Noting the input ```event``` ID and ```js``` ID from the ```Handerls```
+or just ```sudo evtest``` would get you
+```bash
+No device specified, trying to scan all of /dev/input/event*
+Available devices:
+/dev/input/event0:	vc4
+/dev/input/event1:	vc4
+/dev/input/event2:	ESP32TestOrg
+```
+then
 ```
 leet@thor:~ $ evdev-joystick --s /dev/input/event2
 Supported Absolute axes:
@@ -285,7 +310,7 @@ Uploading effect #3 (Damper) ... Error: Function not implemented
 Uploading effect #4 (Strong rumble, with heavy motor) ... Error: Function not implemented
 Uploading effect #5 (Weak rumble, with light motor) ... Error: Function not implemented
 Enter effect number, -1 to exit
-``` 
+```
 Should be able to get the battery level with
 ```bash
 dbus-send --print-reply=literal --system \
