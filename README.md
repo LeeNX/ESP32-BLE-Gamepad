@@ -247,6 +247,45 @@ Joystick test using the following
 ```bash
 sudo jstest /dev/input/js0
 ````
+Noting the input event that appear with js0
+```
+leet@thor:~ $ evdev-joystick --s /dev/input/event2
+Supported Absolute axes:
+  Absolute axis 0x00 (0) (X Axis) (value: 0, min: 0, max: 32767, flatness: 2047 (=6.25%), fuzz: 127)
+  Absolute axis 0x01 (1) (Y Axis) (value: 0, min: 0, max: 32767, flatness: 2047 (=6.25%), fuzz: 127)
+  Absolute axis 0x02 (2) (Z Axis) (value: 0, min: 0, max: 32767, flatness: 2047 (=6.25%), fuzz: 127)
+  Absolute axis 0x03 (3) (X Rate Axis) (value: 0, min: 0, max: 32767, flatness: 2047 (=6.25%), fuzz: 127)
+  Absolute axis 0x04 (4) (Y Rate Axis) (value: 0, min: 0, max: 32767, flatness: 2047 (=6.25%), fuzz: 127)
+  Absolute axis 0x05 (5) (Z Rate Axis) (value: 0, min: 0, max: 32767, flatness: 2047 (=6.25%), fuzz: 127)
+  Absolute axis 0x06 (6) (Throttle) (value: 0, min: 0, max: 32767, flatness: 2047 (=6.25%), fuzz: 127)
+  Absolute axis 0x10 (16) (Hat zero, x axis) (value: 0, min: -1, max: 1, flatness: 0 (=0.00%), fuzz: 0)
+  Absolute axis 0x11 (17) (Hat zero, y axis) (value: 0, min: -1, max: 1, flatness: 0 (=0.00%), fuzz: 0)
+```
+fftesting could be done with
+```
+leet@thor:~ $ fftest /dev/input/event2
+Force feedback test program.
+HOLD FIRMLY YOUR WHEEL OR JOYSTICK TO PREVENT DAMAGES
+
+Device /dev/input/event2 opened
+Features:
+  * Absolute axes: X, Y, Z, RX, RY, RZ, Throttle, Hat 0 X, Hat 0 Y,
+    [7F 00 03 00 00 00 00 00 ]
+  * Relative axes:
+    [00 00 ]
+  * Force feedback effects types:
+    Force feedback periodic effects:
+    [00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ]
+  * Number of simultaneous effects: 0
+
+Uploading effect #0 (Periodic sinusoidal) ... Error:: Function not implemented
+Uploading effect #1 (Constant) ... Error: Function not implemented
+Uploading effect #2 (Spring) ... Error: Function not implemented
+Uploading effect #3 (Damper) ... Error: Function not implemented
+Uploading effect #4 (Strong rumble, with heavy motor) ... Error: Function not implemented
+Uploading effect #5 (Weak rumble, with light motor) ... Error: Function not implemented
+Enter effect number, -1 to exit
+``` 
 Should be able to get the battery level with
 ```bash
 dbus-send --print-reply=literal --system \
@@ -287,6 +326,7 @@ Closing device
         Handle: 0x0027
           Data: 05
 ```
+Feedback over serial:
 ```
 18:00:12.531 -> D NimBLECharacteristic: Characteristic 0x2a4d Write event
 18:00:12.531 -> D NimBLECharacteristic: >> setValue: length=1, data=05, characteristic UUID=0x2a4d
