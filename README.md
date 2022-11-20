@@ -242,6 +242,190 @@ Pairing successful
 Attempting to connect to 34:94:54:35:1D:F6
 Connection successful
 ```
+Found some times the layout might changes, get another list
+```
+sudo bluetoothctl
+menu gatt
+list-attributes 34:94:54:35:1D:F6
+```
+Output?
+```
+[ESP32TestOrg]# list-attributes 34:94:54:35:1D:F6
+Primary Service (Handle 0x5f9c)
+    /org/bluez/hci0/dev_34_94_54_35_1D_F6/service0029
+    0000180f-0000-1000-8000-00805f9b34fb
+    Battery Service
+Characteristic (Handle 0x8900)
+    /org/bluez/hci0/dev_34_94_54_35_1D_F6/service0029/char002a
+    00002a19-0000-1000-8000-00805f9b34fb
+    Battery Level
+Descriptor (Handle 0x0000)
+    /org/bluez/hci0/dev_34_94_54_35_1D_F6/service0029/char002a/desc002d
+    00002904-0000-1000-8000-00805f9b34fb
+    Characteristic Format
+Descriptor (Handle 0x0000)
+    /org/bluez/hci0/dev_34_94_54_35_1D_F6/service0029/char002a/desc002c
+    00002902-0000-1000-8000-00805f9b34fb
+    Client Characteristic Configuration
+Primary Service (Handle 0x819c)
+    /org/bluez/hci0/dev_34_94_54_35_1D_F6/service000a
+    0000180a-0000-1000-8000-00805f9b34fb
+    Device Information
+Characteristic (Handle 0xd400)
+    /org/bluez/hci0/dev_34_94_54_35_1D_F6/service000a/char0017
+    00002a27-0000-1000-8000-00805f9b34fb
+    Hardware Revision String
+Characteristic (Handle 0xd400)
+    /org/bluez/hci0/dev_34_94_54_35_1D_F6/service000a/char0015
+    00002a26-0000-1000-8000-00805f9b34fb
+    Firmware Revision String
+Characteristic (Handle 0xd400)
+    /org/bluez/hci0/dev_34_94_54_35_1D_F6/service000a/char0013
+    00002a25-0000-1000-8000-00805f9b34fb
+    Serial Number String
+Characteristic (Handle 0xd400)
+    /org/bluez/hci0/dev_34_94_54_35_1D_F6/service000a/char0011
+    00002a28-0000-1000-8000-00805f9b34fb
+    Software Revision String
+Characteristic (Handle 0xd400)
+    /org/bluez/hci0/dev_34_94_54_35_1D_F6/service000a/char000f
+    00002a24-0000-1000-8000-00805f9b34fb
+    Model Number String
+Characteristic (Handle 0xd400)
+    /org/bluez/hci0/dev_34_94_54_35_1D_F6/service000a/char000d
+    00002a29-0000-1000-8000-00805f9b34fb
+    Manufacturer Name String
+Characteristic (Handle 0xd400)
+    /org/bluez/hci0/dev_34_94_54_35_1D_F6/service000a/char000b
+    00002a50-0000-1000-8000-00805f9b34fb
+    PnP ID
+Primary Service (Handle 0x819c)
+    /org/bluez/hci0/dev_34_94_54_35_1D_F6/service0006
+    00001801-0000-1000-8000-00805f9b34fb
+    Generic Attribute Profile
+Characteristic (Handle 0xd400)
+    /org/bluez/hci0/dev_34_94_54_35_1D_F6/service0006/char0007
+    00002a05-0000-1000-8000-00805f9b34fb
+    Service Changed
+Descriptor (Handle 0x0000)
+    /org/bluez/hci0/dev_34_94_54_35_1D_F6/service0006/char0007/desc0009
+    00002902-0000-1000-8000-00805f9b34fb
+    Client Characteristic Configuration
+```
+```
+dbus-send --print-reply=literal --system --dest=org.bluez \
+  /org/bluez/hci0/dev_34_94_54_35_1D_F6/service0029/char002a \
+  org.freedesktop.DBus.Properties.GetAll string:"org.bluez.GattCharacteristic1"
+```
+```
+dbus-send --print-reply=literal --system --dest=org.bluez \
+  /org/bluez/hci0/dev_34_94_54_35_1D_F6/service0029/char002a \
+  org.freedesktop.DBus.Properties.Get \
+  string:"org.bluez.GattCharacteristic1" string:"Value"
+```
+```
+dbus-send --print-reply=literal --system --dest=org.bluez \
+  /org/bluez/hci0/dev_34_94_54_35_1D_F6/service0029/char002a/desc002d \
+  org.freedesktop.DBus.Properties.GetAll \
+  string:"org.bluez.GattDescriptor1"
+dbus-send --print-reply=literal --system --dest=org.bluez \
+  /org/bluez/hci0/dev_34_94_54_35_1D_F6/service0029/char002a/desc002d \
+  org.freedesktop.DBus.Properties.Get \
+  string:"org.bluez.GattDescriptor1" \
+  string:"Value"
+dbus-send --print-reply=literal --system --dest=org.bluez \
+  /org/bluez/hci0/dev_34_94_54_35_1D_F6/service0029/char002a \
+  org.freedesktop.DBus.Properties.GetAll \
+  string:"org.bluez.GattCharacteristic1"
+dbus-send --print-reply=literal --system --dest=org.bluez \
+  /org/bluez/hci0/dev_34_94_54_35_1D_F6/service0029/char002a \
+  org.freedesktop.DBus.Properties.Get \
+  string:"org.bluez.GattCharacteristic1"\
+  string:"Value"
+```
+Found that the d-bus value would not update, unless I requested a read in 
+```
+attribute-info /org/bluez/hci0/dev_34_94_54_35_1D_F6/service0029/char002a
+select-attribute /org/bluez/hci0/dev_34_94_54_35_1D_F6/service0029/char002a
+read
+```
+Need to enable notify
+```
+notify on
+```
+Walk BlueTooth Devices
+```
+udevadm info --attribute-walk /sys/class/bluetooth/hci0
+```
+Monitor udev
+```
+udevadm monitor --environment --udev
+```
+```
+leet@thor:~ $ udevadm info -a -n /dev/input/event2
+
+Udevadm info starts with the device specified by the devpath and then
+walks up the chain of parent devices. It prints for every device
+found, all possible attributes in the udev rules key format.
+A rule to match, can be composed by the attributes of the device
+and the attributes from one single parent device.
+
+  looking at device '/devices/virtual/misc/uhid/0005:E502:ABCD.0188/input/input393/event2':
+    KERNEL=="event2"
+    SUBSYSTEM=="input"
+    DRIVER==""
+    ATTR{power/control}=="auto"
+    ATTR{power/runtime_active_time}=="0"
+    ATTR{power/runtime_status}=="unsupported"
+    ATTR{power/runtime_suspended_time}=="0"
+
+  looking at parent device '/devices/virtual/misc/uhid/0005:E502:ABCD.0188/input/input393':
+    KERNELS=="input393"
+    SUBSYSTEMS=="input"
+    DRIVERS==""
+    ATTRS{capabilities/abs}=="3007f"
+    ATTRS{capabilities/ev}=="1b"
+    ATTRS{capabilities/ff}=="0"
+    ATTRS{capabilities/key}=="ffffffffffff 0 0 0 0 0 0 ffff000000000000 0 0 0 0"
+    ATTRS{capabilities/led}=="0"
+    ATTRS{capabilities/msc}=="10"
+    ATTRS{capabilities/rel}=="0"
+    ATTRS{capabilities/snd}=="0"
+    ATTRS{capabilities/sw}=="0"
+    ATTRS{id/bustype}=="0005"
+    ATTRS{id/product}=="abcd"
+    ATTRS{id/vendor}=="e502"
+    ATTRS{id/version}=="1001"
+    ATTRS{inhibited}=="0"
+    ATTRS{name}=="ESP32TestOrg"
+    ATTRS{phys}=="dc:a6:32:c2:ae:71"
+    ATTRS{power/control}=="auto"
+    ATTRS{power/runtime_active_time}=="0"
+    ATTRS{power/runtime_status}=="unsupported"
+    ATTRS{power/runtime_suspended_time}=="0"
+    ATTRS{properties}=="0"
+    ATTRS{uniq}=="34:94:54:35:1d:f6"
+
+  looking at parent device '/devices/virtual/misc/uhid/0005:E502:ABCD.0188':
+    KERNELS=="0005:E502:ABCD.0188"
+    SUBSYSTEMS=="hid"
+    DRIVERS=="hid-generic"
+    ATTRS{country}=="00"
+    ATTRS{power/control}=="auto"
+    ATTRS{power/runtime_active_time}=="0"
+    ATTRS{power/runtime_status}=="unsupported"
+    ATTRS{power/runtime_suspended_time}=="0"
+
+  looking at parent device '/devices/virtual/misc/uhid':
+    KERNELS=="uhid"
+    SUBSYSTEMS=="misc"
+    DRIVERS==""
+    ATTRS{power/control}=="auto"
+    ATTRS{power/runtime_active_time}=="0"
+    ATTRS{power/runtime_status}=="unsupported"
+    ATTRS{power/runtime_suspended_time}=="0"
+
+```
 Should then see a joystick endpoint ```/dev/input/js0```
 Joystick test using the following
 ```bash
