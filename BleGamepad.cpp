@@ -27,6 +27,10 @@ static const char *LOG_TAG = "BLEGamepad";
 #define CHARACTERISTIC_UUID_FIRMWARE_REVISION  "2A26"      // Characteristic - Firmware Revision String - 0x2A26
 #define CHARACTERISTIC_UUID_HARDWARE_REVISION  "2A27"      // Characteristic - Hardware Revision String - 0x2A27
 
+#define SERVICE_UUID_UART                      "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"  // UART service UUID
+#define CHARACTERISTIC_UUID_UART_RX            "6E400002-B5A3-F393-E0A9-E50E24DCCA9E"
+#define CHARACTERISTIC_UUID_UART_TX            "6E400003-B5A3-F393-E0A9-E50E24DCCA9E"
+
 
 uint8_t tempHidReportDescriptor[150];
 int hidReportDescriptorSize = 0;
@@ -1370,7 +1374,20 @@ void BleGamepad::taskServer(void *pvParameter)
     BleGamepadInstance->hid = new NimBLEHIDDevice(pServer);
 
     BleGamepadInstance->inputGamepad = BleGamepadInstance->hid->inputReport(BleGamepadInstance->configuration.getHidReportId()); // <-- input REPORTID from report map
+    BleGamepadInstance->outputGamepad = BleGamepadInstance->hid->outputReport(BleGamepadInstance->configuration.getHidReportId()); // <-- output REPORTID from report map
     BleGamepadInstance->connectionStatus->inputGamepad = BleGamepadInstance->inputGamepad;
+    BleGamepadInstance->connectionStatus->outputGamepad = BleGamepadInstance->outputGamepad;
+
+//    BleGamepadInstance->outputKeyboard = BleGamepadInstance->hid->outputReport(KEYBOARD_ID);
+//    BleGamepadInstance->inputMediaKeys = BleGamepadInstance->hid->inputReport(MEDIA_KEYS_ID);
+//    BleGamepadInstance->connectionStatus->inputKeyboard = BleGamepadInstance->inputKeyboard;
+//    BleGamepadInstance->connectionStatus->outputKeyboard = BleGamepadInstance->outputKeyboard;
+
+//    BleGamepadInstance->inputMouse = BleGamepadInstance->hid->inputReport(MOUSE_ID); // <-- input REPORTID from report map
+//    BleGamepadInstance->connectionStatus->inputMouse = BleGamepadInstance->inputMouse;
+
+//    BleGamepadInstance->outputKeyboard->setCallbacks(new KeyboardOutputCallbacks());
+
 
     BleGamepadInstance->hid->manufacturer()->setValue(BleGamepadInstance->deviceManufacturer);
 
@@ -1408,6 +1425,14 @@ void BleGamepad::taskServer(void *pvParameter)
 
     BleGamepadInstance->hid->pnp(0x01, vid, pid, guidVersion);
     BleGamepadInstance->hid->hidInfo(0x00, 0x01);
+
+    //NimBLEService *pService = pServer->getServiceByUUID(SERVICE_UUID_UART);
+	
+	BLECharacteristic* pCharacteristic_UART_TX = pService->createCharacteristic(
+      CHARACTERISTIC_UUID_UART_TX,
+      NIMBLE_PROPERTY::NOTIFY
+    );
+
 
     NimBLEDevice::setSecurityAuth(BLE_SM_PAIR_AUTHREQ_BOND);
 

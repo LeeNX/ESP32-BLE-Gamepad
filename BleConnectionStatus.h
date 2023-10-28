@@ -17,6 +17,9 @@ public:
     void onConnect(NimBLEServer *pServer, ble_gap_conn_desc* desc);
     void onDisconnect(NimBLEServer *pServer);
     NimBLECharacteristic *inputGamepad;
+    NimBLECharacteristic *outputGamepad;
+    NimBLECharacteristic *inputUART;
+    NimBLECharacteristic *outputUART;
 };
 
 #endif // CONFIG_BT_NIMBLE_ROLE_PERIPHERAL
