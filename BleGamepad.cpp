@@ -1374,9 +1374,9 @@ void BleGamepad::taskServer(void *pvParameter)
     BleGamepadInstance->hid = new NimBLEHIDDevice(pServer);
 
     BleGamepadInstance->inputGamepad = BleGamepadInstance->hid->inputReport(BleGamepadInstance->configuration.getHidReportId()); // <-- input REPORTID from report map
-    BleGamepadInstance->outputGamepad = BleGamepadInstance->hid->outputReport(BleGamepadInstance->configuration.getHidReportId()); // <-- output REPORTID from report map
+    //BleGamepadInstance->outputGamepad = BleGamepadInstance->hid->outputReport(BleGamepadInstance->configuration.getHidReportId()); // <-- output REPORTID from report map
     BleGamepadInstance->connectionStatus->inputGamepad = BleGamepadInstance->inputGamepad;
-    BleGamepadInstance->connectionStatus->outputGamepad = BleGamepadInstance->outputGamepad;
+    //BleGamepadInstance->connectionStatus->outputGamepad = BleGamepadInstance->outputGamepad;
 
 //    BleGamepadInstance->outputKeyboard = BleGamepadInstance->hid->outputReport(KEYBOARD_ID);
 //    BleGamepadInstance->inputMediaKeys = BleGamepadInstance->hid->inputReport(MEDIA_KEYS_ID);
@@ -1426,13 +1426,33 @@ void BleGamepad::taskServer(void *pvParameter)
     BleGamepadInstance->hid->pnp(0x01, vid, pid, guidVersion);
     BleGamepadInstance->hid->hidInfo(0x00, 0x01);
 
+/*
     //NimBLEService *pService = pServer->getServiceByUUID(SERVICE_UUID_UART);
-	
-	BLECharacteristic* pCharacteristic_UART_TX = pService->createCharacteristic(
-      CHARACTERISTIC_UUID_UART_TX,
-      NIMBLE_PROPERTY::NOTIFY
+    //NimBLEService* pUartService = pServer->createService(SERVICE_UUID_UART));
+
+    //NimBLEService *pService = pServer->getServiceByUUID(SERVICE_UUID_DEVICE_INFORMATION);
+
+    //NimBLEService *pUartService = pServer->createService(SERVICE_UUID_UART);
+
+    BLEService* pUartService = pServer->createService(SERVICE_UUID_UART);
+
+    BLECharacteristic* pCharacteristic_UART_TX = pUartService->createCharacteristic(
+        CHARACTERISTIC_UUID_UART_TX,
+        //NIMBLE_PROPERTY::READ |
+        NIMBLE_PROPERTY::NOTIFY
     );
 
+    pCharacteristic_UART_TX->setValue("TX");
+    //pCharacteristic_UART_TX->setCallbacks(&chrCallbacks);
+
+    BLECharacteristic* pCharacteristic_UART_RX = pUartService->createCharacteristic(
+        CHARACTERISTIC_UUID_UART_RX,
+        NIMBLE_PROPERTY::WRITE
+    );
+
+    //pCharacteristic_UART_RX->addDescriptor(new BLE2902());
+    //pCharacteristic_UART_RX->addDescriptor(new BLE2902());
+*/
 
     NimBLEDevice::setSecurityAuth(BLE_SM_PAIR_AUTHREQ_BOND);
 
@@ -1451,6 +1471,8 @@ void BleGamepad::taskServer(void *pvParameter)
     NimBLEAdvertising *pAdvertising = pServer->getAdvertising();
     pAdvertising->setAppearance(HID_GAMEPAD);
     pAdvertising->addServiceUUID(BleGamepadInstance->hid->hidService()->getUUID());
+    pAdvertising->addServiceUUID(SERVICE_UUID_UART);
+
     pAdvertising->start();
     BleGamepadInstance->hid->setBatteryLevel(BleGamepadInstance->batteryLevel);
 

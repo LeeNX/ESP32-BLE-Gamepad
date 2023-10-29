@@ -16,10 +16,11 @@ public:
     bool connected = false;
     void onConnect(NimBLEServer *pServer, ble_gap_conn_desc* desc);
     void onDisconnect(NimBLEServer *pServer);
+    //void onMTUChange(uint16_t MTU, NimBLEConnInfo& connInfo)
     NimBLECharacteristic *inputGamepad;
-    NimBLECharacteristic *outputGamepad;
-    NimBLECharacteristic *inputUART;
-    NimBLECharacteristic *outputUART;
+    //NimBLECharacteristic *outputGamepad;
+    //NimBLECharacteristic *inputUART;
+    //NimBLECharacteristic *outputUART;
 };
 
 #endif // CONFIG_BT_NIMBLE_ROLE_PERIPHERAL
