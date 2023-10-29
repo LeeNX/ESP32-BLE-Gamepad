@@ -15,7 +15,7 @@ public:
     BleConnectionStatus(void);
     bool connected = false;
     void onConnect(NimBLEServer *pServer, ble_gap_conn_desc* desc);
-    void onDisconnect(NimBLEServer *pServer);
+    void onDisconnect(NimBLEServer *pServer, ble_gap_conn_desc* desc);
     //void onMTUChange(uint16_t MTU, NimBLEConnInfo& connInfo)
     NimBLECharacteristic *inputGamepad;
     //NimBLECharacteristic *outputGamepad;

@@ -24,12 +24,13 @@ void BleConnectionStatus::onConnect(NimBLEServer *pServer, ble_gap_conn_desc* de
     pServer->updateConnParams(desc->conn_handle, 6, 7, 0, 600);
 }
 
-void BleConnectionStatus::onDisconnect(NimBLEServer *pServer)
+void BleConnectionStatus::onDisconnect(NimBLEServer *pServer, ble_gap_conn_desc* desc)
 {
     this->connected = false;
     Serial.println("Client disconnected:");
     //Serial.print(pServer->getPeerAddress().toString().c_str());
-    Serial.println("Start advertising ...");
+    Serial.print(NimBLEAddress(desc->peer_ota_addr).toString().c_str());
+    //Serial.println("Start advertising ...");
     //NimBLEDevice::startAdvertising();
 
 }
