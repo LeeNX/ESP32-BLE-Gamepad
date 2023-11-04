@@ -1,3 +1,15 @@
+### LeeNX Fork of ESP32-BLE-Gamepad
+Meant for testing experimental and PoC changes before been upstreamed.
+
+I will try and keep the list of branches and what they used for current.
+
+leet-uart: Looking at adding some what BLE standard Uart comms without hacking in Bluetooth Classic into service.
+
+Long road to rumble/forcefeedback/haptic support:
+BLE no driver required means that the OS is meant to implementation services, which for rumble/forcefeedback/haptic has not found a standard yet. 
+My plan is to get something simple, like PlayerLEDs working with an HID interface, which could be tested by hand in a browser. Then should be possible to support in SDL and draw up a patch. Once that is working, then try and get working in Linux and possible add to Chrome and Firefox as an extension to the gamepad service.
+Now I think some people are going to say that XBox360 and PlayStation have open source implementations, but these are not standard BLE/HID, plus we would need to possible license the implementations, which is not going to work. 
+
 ## POSSIBLE BREAKING CHANGES - PLEASE READ
 A large code rebase (configuration class) along with some extra features (start, select, menu, home, back, volume up, volume down and volume mute buttons) has been committed thanks to @dexterdy
 
