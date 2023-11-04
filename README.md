@@ -10,6 +10,8 @@ BLE no driver required means that the OS is meant to implementation services, wh
 My plan is to get something simple, like PlayerLEDs working with an HID interface, which could be tested by hand in a browser. Then should be possible to support in SDL and draw up a patch. Once that is working, then try and get working in Linux and possible add to Chrome and Firefox as an extension to the gamepad service.
 Now I think some people are going to say that XBox360 and PlayStation have open source implementations, but these are not standard BLE/HID, plus we would need to possible license the implementations, which is not going to work. 
 
+playerLEDs: Try at PlayerLEDs for HID testing
+
 ## POSSIBLE BREAKING CHANGES - PLEASE READ
 A large code rebase (configuration class) along with some extra features (start, select, menu, home, back, volume up, volume down and volume mute buttons) has been committed thanks to @dexterdy
 
