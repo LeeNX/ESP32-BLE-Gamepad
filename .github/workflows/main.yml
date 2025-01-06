@@ -10,6 +10,10 @@ name: Compile Sketches
       - "ci-builds-*"
   pull_request:
   workflow_dispatch:
+  merge_group:
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    - cron:  '15 0 1 * *'
 
 permissions: {}
 
