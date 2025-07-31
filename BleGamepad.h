@@ -24,6 +24,7 @@ class BleGamepad
     uint8_t numOfButtonBytes;
     bool enableOutputReport;
     uint16_t outputReportLength;
+    bool enableOutputReportRumble;
     uint8_t _buttons[16]; // 8 bits x 16 bytes = 128 bits --> 128 button max
     uint8_t _specialButtons;
     int16_t _x;
@@ -151,6 +152,12 @@ class BleGamepad
     NimBLEConnInfo getPeerInfo();
     String getDeviceName();
     String getDeviceManufacturer();
+
+    //void setOutputReportRumbleCallback(void (*cb)(uint8_t* data, size_t len));
+    void setOutputReportRumbleCallback(void (*cb)(uint8_t*, size_t));
+
+    NimBLEHIDDevice* getHidDevice();
+
     void setGyroscope(int16_t gX = 0, int16_t gY = 0, int16_t gZ = 0);
     void setAccelerometer(int16_t aX = 0, int16_t aY = 0, int16_t aZ = 0);
     void setMotionControls(int16_t gX = 0, int16_t gY = 0, int16_t gZ = 0, int16_t aX = 0, int16_t aY = 0, int16_t aZ = 0);

@@ -25,9 +25,10 @@ BleGamepadConfiguration::BleGamepadConfiguration() : _controllerType(CONTROLLER_
                                                      _firmwareRevision("0.7.4"),
                                                      _hardwareRevision("1.0.0"),
                                                      _enableOutputReport(false),
+                                                     _enableOutputReportRumble(false),
                                                      _enableNordicUARTService(false),
                                                      _outputReportLength(64),
-													                           _transmitPowerLevel(9)
+                                                     _transmitPowerLevel(9)
 {
 }
 
@@ -132,6 +133,7 @@ const char *BleGamepadConfiguration::getSerialNumber(){ return _serialNumber; }
 const char *BleGamepadConfiguration::getFirmwareRevision(){ return _firmwareRevision; }
 const char *BleGamepadConfiguration::getHardwareRevision(){ return _hardwareRevision; }
 bool BleGamepadConfiguration::getEnableOutputReport(){ return _enableOutputReport; }
+bool BleGamepadConfiguration::getEnableOutputReportRumble(){ return _enableOutputReportRumble; }
 bool BleGamepadConfiguration::getEnableNordicUARTService(){ return _enableNordicUARTService; }
 uint16_t BleGamepadConfiguration::getOutputReportLength(){ return _outputReportLength; }
 int8_t BleGamepadConfiguration::getTXPowerLevel(){ return _transmitPowerLevel; }	// Returns the power level that was set as the server started
@@ -212,6 +214,7 @@ void BleGamepadConfiguration::setSerialNumber(char *value) { _serialNumber = val
 void BleGamepadConfiguration::setFirmwareRevision(char *value) { _firmwareRevision = value; }
 void BleGamepadConfiguration::setHardwareRevision(char *value) { _hardwareRevision = value; }
 void BleGamepadConfiguration::setEnableOutputReport(bool value) { _enableOutputReport = value; }
+void BleGamepadConfiguration::setEnableOutputReportRumble(bool value) { _enableOutputReportRumble = value; }
 void BleGamepadConfiguration::setEnableNordicUARTService(bool value) { _enableNordicUARTService = value; }
 void BleGamepadConfiguration::setOutputReportLength(uint16_t value) { _outputReportLength = value; }
 void BleGamepadConfiguration::setTXPowerLevel(int8_t value) { _transmitPowerLevel = value; }

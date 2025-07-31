@@ -7,8 +7,12 @@
 #include "sdkconfig.h"
 #include "BleConnectionStatus.h"
 #include "BleGamepad.h"
+#include "BleOutputReportRumbleCallback.h"
+// include NimBLECharacteristicCallbacks
+//#include <NimBLECharacteristic.h>
 #include "NimBLELog.h"
 #include "BleGamepadConfiguration.h"
+//#include "sdkconfig.h"
 
 #include <stdexcept>
 
@@ -87,6 +91,7 @@ BleGamepad::BleGamepad(std::string deviceName, std::string deviceManufacturer, u
   numOfButtonBytes = 0;
   enableOutputReport = false;
   outputReportLength = 64;
+  enableOutputReportRumble = false;
   nusInitialized = false;
 }
 
@@ -101,6 +106,7 @@ void BleGamepad::begin(BleGamepadConfiguration *config)
 
   enableOutputReport = configuration.getEnableOutputReport();
   outputReportLength = configuration.getOutputReportLength();
+  enableOutputReportRumble = configuration.getEnableOutputReportRumble();
 
   uint8_t buttonPaddingBits = 8 - (configuration.getButtonCount() % 8);
   if (buttonPaddingBits == 8)
@@ -734,6 +740,38 @@ void BleGamepad::begin(BleGamepadConfiguration *config)
     }
 
     // Output (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x91;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x02;
+  }
+
+  if (configuration.getEnableOutputReportRumble()) {
+    // Usage Page (Vendor Defined 0xFF01)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x06;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x01;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0xFF;
+
+    // Usage (0x02) – Rumble Output
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x09;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x02;
+
+    // Logical Min (0)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x15;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x00;
+
+    // Logical Max (255)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x26;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0xFF;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x00;
+
+    // Report Size (8 bits)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x75;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x08;
+
+    // Report Count (2 bytes: weak motor, strong motor)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x95;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x02;
+
+    // Output (Data,Var,Abs)
     tempHidReportDescriptor[hidReportDescriptorSize++] = 0x91;
     tempHidReportDescriptor[hidReportDescriptorSize++] = 0x02;
   }
@@ -1789,6 +1827,26 @@ String BleGamepad::getDeviceManufacturer()
 {
   return this->deviceManufacturer.c_str();
 }
+
+NimBLEHIDDevice* BleGamepad::getHidDevice() {
+  return hid;
+}
+
+/*
+void BleGamepad::setOutputReportRumbleCallback(void (*cb)(uint8_t* data, size_t len)) {
+  NimBLEHIDDevice* dev = getHidDevice();
+  if (dev) {
+      dev->setOutputReportCallback(cb);
+  }
+}
+*/
+
+/*
+void BleGamepad::setOutputReportRumbleCallback(void (*cb)(uint8_t*, size_t)) {
+  //OutputReportCallbackHandler::setCallback(cb);
+  BleGamepadOutputReportRumbleCallback::setCallback(cb);
+}
+*/
 
 int8_t BleGamepad::getTXPowerLevel()
 {

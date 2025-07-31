@@ -238,9 +238,10 @@ private:
     const char *_firmwareRevision;
     const char *_hardwareRevision;
     bool _enableOutputReport;
+    bool _enableOutputReportRumble;
     bool _enableNordicUARTService;
     uint16_t _outputReportLength;
-	  int8_t _transmitPowerLevel;
+    int8_t _transmitPowerLevel;
  
 
 public:
@@ -297,9 +298,10 @@ public:
     const char *getFirmwareRevision();
     const char *getHardwareRevision();
     bool getEnableOutputReport();
+    bool getEnableOutputReportRumble();
     bool getEnableNordicUARTService();
     uint16_t getOutputReportLength();
-	  int8_t getTXPowerLevel();
+    int8_t getTXPowerLevel();
 
     void setControllerType(uint8_t controllerType);
     void setAutoReport(bool value);
@@ -347,9 +349,10 @@ public:
     void setFirmwareRevision(char *value);
     void setHardwareRevision(char *value);
     void setEnableOutputReport(bool value);
+    void setEnableOutputReportRumble(bool value);
     void setEnableNordicUARTService(bool value);
     void setOutputReportLength(uint16_t value);
-	  void setTXPowerLevel(int8_t value);     
+    void setTXPowerLevel(int8_t value);
 };
 
 #endif
