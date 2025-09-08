@@ -192,7 +192,6 @@ void BleGamepad::begin(BleGamepadConfiguration *config)
 
     if (buttonPaddingBits > 0)
     {
-
       // REPORT_SIZE (1)
       tempHidReportDescriptor[hidReportDescriptorSize++] = 0x75;
       tempHidReportDescriptor[hidReportDescriptorSize++] = 0x01;
@@ -208,6 +207,44 @@ void BleGamepad::begin(BleGamepadConfiguration *config)
     } // Padding Bits Needed
 
   } // Buttons
+
+    // Battery Strength
+    // USAGE_PAGE (Generic Device Controls)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x05;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x06;
+
+    // USAGE_PAGE (Battery Strength)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x09;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x20;
+
+    // LOGICAL_MINIMUM (0)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x15;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x00;
+
+    // LOGICAL_MAXIMUM (100)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x26;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x64;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x00;
+
+    // REPORT_SIZE (8)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x75;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x08;
+
+    // USAGE_MINIMUM (Button 1)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x19;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x01;
+
+    // USAGE_MAXIMUM (Up to 128 buttons possible)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x29;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = configuration.getButtonCount();
+
+    // REPORT_COUNT (1)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x95;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x01;
+
+    // INPUT (Data,Var,Abs)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x81;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x02;
 
   if (configuration.getTotalSpecialButtonCount() > 0)
   {
@@ -225,7 +262,6 @@ void BleGamepad::begin(BleGamepadConfiguration *config)
 
     if (configuration.getDesktopSpecialButtonCount() > 0)
     {
-
       // USAGE_PAGE (Generic Desktop)
       tempHidReportDescriptor[hidReportDescriptorSize++] = 0x05;
       tempHidReportDescriptor[hidReportDescriptorSize++] = 0x01;
@@ -262,7 +298,6 @@ void BleGamepad::begin(BleGamepadConfiguration *config)
 
     if (configuration.getConsumerSpecialButtonCount() > 0)
     {
-
       // USAGE_PAGE (Consumer Page)
       tempHidReportDescriptor[hidReportDescriptorSize++] = 0x05;
       tempHidReportDescriptor[hidReportDescriptorSize++] = 0x0C;
@@ -315,7 +350,6 @@ void BleGamepad::begin(BleGamepadConfiguration *config)
 
     if (specialButtonPaddingBits > 0)
     {
-
       // REPORT_SIZE (1)
       tempHidReportDescriptor[hidReportDescriptorSize++] = 0x75;
       tempHidReportDescriptor[hidReportDescriptorSize++] = 0x01;
@@ -439,7 +473,6 @@ void BleGamepad::begin(BleGamepadConfiguration *config)
 
   if (configuration.getSimulationCount() > 0)
   {
-
     // USAGE_PAGE (Simulation Controls)
     tempHidReportDescriptor[hidReportDescriptorSize++] = 0x05;
     tempHidReportDescriptor[hidReportDescriptorSize++] = 0x02;
@@ -517,8 +550,7 @@ void BleGamepad::begin(BleGamepadConfiguration *config)
     tempHidReportDescriptor[hidReportDescriptorSize++] = 0xc0;
 
   } // Simulation Controls
-  
-  
+
   // Gyroscope
   if (configuration.getIncludeGyroscope())
   {
@@ -575,7 +607,7 @@ void BleGamepad::begin(BleGamepadConfiguration *config)
     // END_COLLECTION (Physical)
     tempHidReportDescriptor[hidReportDescriptorSize++] = 0xc0;
     
-  } //Gyroscope
+  } // Gyroscope
   
   // Accelerometer
   if (configuration.getIncludeAccelerometer())
@@ -633,11 +665,10 @@ void BleGamepad::begin(BleGamepadConfiguration *config)
     // END_COLLECTION (Physical)
     tempHidReportDescriptor[hidReportDescriptorSize++] = 0xc0;
     
-  } //Accelerometer
+  } // Accelerometer
 
   if (configuration.getHatSwitchCount() > 0)
   {
-
     // COLLECTION (Physical)
     tempHidReportDescriptor[hidReportDescriptorSize++] = 0xA1;
     tempHidReportDescriptor[hidReportDescriptorSize++] = 0x00;
@@ -689,7 +720,6 @@ void BleGamepad::begin(BleGamepadConfiguration *config)
     // END_COLLECTION (Physical)
     tempHidReportDescriptor[hidReportDescriptorSize++] = 0xc0;
   } // Hat Switches
-
 
   if (configuration.getEnableOutputReport())
   {
