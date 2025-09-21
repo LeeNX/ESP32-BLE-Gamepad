@@ -40,7 +40,7 @@ static const char *LOG_TAG = "BLEGamepad";
 #define POWER_STATE_CHARGING        3 // 0b11
 #define POWER_STATE_CRITICAL        3 // 0b11
 
-BleGamepad::BleGamepad(std::string deviceName, std::string deviceManufacturer, uint8_t batteryLevel, bool delayAdvertising) : _buttons(),
+BleGamepad::BleGamepad(std::string deviceName, std::string deviceManufacturer, uint8_t batteryLevel, uint8_t powerState, bool delayAdvertising) : _buttons(),
   _specialButtons(0),
   _x(0),
   _y(0),
@@ -79,6 +79,7 @@ BleGamepad::BleGamepad(std::string deviceName, std::string deviceManufacturer, u
   this->deviceName = deviceName;
   this->deviceManufacturer = deviceManufacturer;
   this->batteryLevel = batteryLevel;
+  this->powerState = powerState;
   this->delayAdvertising = delayAdvertising;
   this->connectionStatus = new BleConnectionStatus();
   
@@ -737,6 +738,48 @@ void BleGamepad::begin(BleGamepadConfiguration *config)
     tempHidReportDescriptor[hidReportDescriptorSize++] = 0x91;
     tempHidReportDescriptor[hidReportDescriptorSize++] = 0x02;
   }
+
+    // --- Battery Strength ---
+  tempHidReportDescriptor[hidReportDescriptorSize++] = 0x05; // Usage Page (Generic Device Controls)
+  tempHidReportDescriptor[hidReportDescriptorSize++] = 0x06;
+  tempHidReportDescriptor[hidReportDescriptorSize++] = 0x09; // Usage (Battery Strength)
+  tempHidReportDescriptor[hidReportDescriptorSize++] = 0x20;
+  tempHidReportDescriptor[hidReportDescriptorSize++] = 0x15; // Logical Minimum (0)
+  tempHidReportDescriptor[hidReportDescriptorSize++] = 0x00;
+  tempHidReportDescriptor[hidReportDescriptorSize++] = 0x26; // Logical Maximum (100)
+  tempHidReportDescriptor[hidReportDescriptorSize++] = 0x64;
+  tempHidReportDescriptor[hidReportDescriptorSize++] = 0x00;
+  tempHidReportDescriptor[hidReportDescriptorSize++] = 0x75; // Report Size (8)
+  tempHidReportDescriptor[hidReportDescriptorSize++] = 0x08;
+  tempHidReportDescriptor[hidReportDescriptorSize++] = 0x95; // Report Count (1)
+  tempHidReportDescriptor[hidReportDescriptorSize++] = 0x01;
+  tempHidReportDescriptor[hidReportDescriptorSize++] = 0x81; // Input (Data,Var,Abs)
+  tempHidReportDescriptor[hidReportDescriptorSize++] = 0x02;
+
+  // --- after battery usage (if present) ---
+  tempHidReportDescriptor[hidReportDescriptorSize++] = 0x05; // Usage Page (Battery System)
+  tempHidReportDescriptor[hidReportDescriptorSize++] = 0x85;
+  tempHidReportDescriptor[hidReportDescriptorSize++] = 0x09; // Usage (Charging)
+  tempHidReportDescriptor[hidReportDescriptorSize++] = 0x44;
+  tempHidReportDescriptor[hidReportDescriptorSize++] = 0x15; // Logical Min (0)
+  tempHidReportDescriptor[hidReportDescriptorSize++] = 0x00;
+  tempHidReportDescriptor[hidReportDescriptorSize++] = 0x25; // Logical Max (1)
+  tempHidReportDescriptor[hidReportDescriptorSize++] = 0x01;
+  tempHidReportDescriptor[hidReportDescriptorSize++] = 0x75; // Report Size (1 bit)
+  tempHidReportDescriptor[hidReportDescriptorSize++] = 0x01;
+  tempHidReportDescriptor[hidReportDescriptorSize++] = 0x95; // Report Count (1)
+  tempHidReportDescriptor[hidReportDescriptorSize++] = 0x01;
+  tempHidReportDescriptor[hidReportDescriptorSize++] = 0x81; // Input (Data,Var,Abs)
+  tempHidReportDescriptor[hidReportDescriptorSize++] = 0x02;
+
+  // Padding so next fields / end alignment align to byte
+  tempHidReportDescriptor[hidReportDescriptorSize++] = 0x75; // Report Size (7 bits pad)
+  tempHidReportDescriptor[hidReportDescriptorSize++] = 0x07;
+  tempHidReportDescriptor[hidReportDescriptorSize++] = 0x95; // Report Count (1)
+  tempHidReportDescriptor[hidReportDescriptorSize++] = 0x01;
+  tempHidReportDescriptor[hidReportDescriptorSize++] = 0x81; // Input (Const,Var,Abs)
+  tempHidReportDescriptor[hidReportDescriptorSize++] = 0x03;
+  // --- end of added usage/padding block ---
 
   // END_COLLECTION (Application)
   tempHidReportDescriptor[hidReportDescriptorSize++] = 0xc0;
@@ -1615,6 +1658,24 @@ void BleGamepad::setBatteryLevel(uint8_t level)
 
     this->hid->setBatteryLevel(this->batteryLevel, this->isConnected() ? true : false);
 
+    if (configuration.getAutoReport())
+    {
+      sendReport();
+    }
+  }
+}
+
+void BleGamepad::setPowerState(uint8_t state)
+{
+  if (state > 3) {
+    state = 0; // clamp invalid values
+  }
+
+  this->powerState = state;
+
+  if (hid != 0)
+  {
+    // No direct NimBLE API like setBatteryLevel, so we only update our report
     if (configuration.getAutoReport())
     {
       sendReport();

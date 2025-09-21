@@ -74,7 +74,7 @@ class BleGamepad
   public:
     BleGamepadConfiguration configuration;
     
-    BleGamepad(std::string deviceName = "ESP32 BLE Gamepad", std::string deviceManufacturer = "Espressif", uint8_t batteryLevel = 100, bool delayAdvertising = false);
+    BleGamepad(std::string deviceName = "ESP32 BLE Gamepad", std::string deviceManufacturer = "Espressif", uint8_t batteryLevel = 100, uint8_t powerState = 2, bool delayAdvertising = false);
     void begin(BleGamepadConfiguration *config = new BleGamepadConfiguration());
     void end(void);
     void setAxes(int16_t x = 0, int16_t y = 0, int16_t z = 0, int16_t rX = 0, int16_t rY = 0, int16_t rZ = 0, int16_t slider1 = 0, int16_t slider2 = 0);
@@ -132,6 +132,14 @@ class BleGamepad
     bool isConnected(void);
     void resetButtons();
     void setBatteryLevel(uint8_t level);
+    /** Set power state of the device.
+     * state values:
+     *   0 = Unknown / Unspecified
+     *   1 = Discharging
+     *   2 = Charging
+     *   3 = Full
+     */
+    void setPowerState(uint8_t state);
     void setPowerStateAll(uint8_t batteryPowerInformation, uint8_t dischargingState, uint8_t chargingState, uint8_t powerLevel);
     void setBatteryPowerInformation(uint8_t batteryPowerInformation);
     void setDischargingState(uint8_t dischargingState);
@@ -140,6 +148,7 @@ class BleGamepad
     void setTXPowerLevel(int8_t level = 9);
     int8_t getTXPowerLevel();
     uint8_t batteryLevel;
+    uint8_t powerState; // e.g. 0 = unknown / battery / external / charging
     bool delayAdvertising;
     bool isOutputReceived();
     uint8_t* getOutputBuffer();
