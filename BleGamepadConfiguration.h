@@ -199,6 +199,17 @@
 #define VOLUME_DEC_BUTTON 6
 #define VOLUME_MUTE_BUTTON 7
 
+#define POWER_STATE_UNKNOWN         0 // 0b00
+#define POWER_STATE_NOT_SUPPORTED   1 // 0b01
+#define POWER_STATE_NOT_PRESENT     2 // 0b10
+#define POWER_STATE_NOT_DISCHARGING 2 // 0b10
+#define POWER_STATE_NOT_CHARGING    2 // 0b10
+#define POWER_STATE_GOOD            2 // 0b10
+#define POWER_STATE_PRESENT         3 // 0b11
+#define POWER_STATE_DISCHARGING     3 // 0b11
+#define POWER_STATE_CHARGING        3 // 0b11
+#define POWER_STATE_CRITICAL        3 // 0b11
+
 class BleGamepadConfiguration
 {
 private:
@@ -210,20 +221,27 @@ private:
     bool _whichSpecialButtons[POSSIBLESPECIALBUTTONS];
     bool _whichAxes[POSSIBLEAXES];
     bool _whichSimulationControls[POSSIBLESIMULATIONCONTROLS];
+    bool _includeGyroscope;
+    bool _includeAccelerometer;
     uint16_t _vid;
     uint16_t _pid;
-	uint16_t _guidVersion;
+    uint16_t _guidVersion;
     int16_t _axesMin;
     int16_t _axesMax;
     int16_t _simulationMin;
     int16_t _simulationMax;
-    char *_modelNumber;
-    char *_softwareRevision;
-    char *_serialNumber;
-    char *_firmwareRevision;
-    char *_hardwareRevision;
+    int16_t _motionMin;
+    int16_t _motionMax;
+    const char *_modelNumber;
+    const char *_softwareRevision;
+    const char *_serialNumber;
+    const char *_firmwareRevision;
+    const char *_hardwareRevision;
     bool _enableOutputReport;
+    bool _enableNordicUARTService;
     uint16_t _outputReportLength;
+    int8_t _transmitPowerLevel;
+ 
 
 public:
     BleGamepadConfiguration();
@@ -262,20 +280,26 @@ public:
     bool getIncludeBrake();
     bool getIncludeSteering();
     const bool *getWhichSimulationControls() const;
+    bool getIncludeAccelerometer();
+    bool getIncludeGyroscope();
     uint16_t getVid();
     uint16_t getPid();
-	uint16_t getGuidVersion();
+    uint16_t getGuidVersion();
     int16_t getAxesMin();
     int16_t getAxesMax();
     int16_t getSimulationMin();
     int16_t getSimulationMax();
-    char *getModelNumber();
-    char *getSoftwareRevision();
-    char *getSerialNumber();
-    char *getFirmwareRevision();
-    char *getHardwareRevision();
+    int16_t getMotionMin();
+    int16_t getMotionMax();
+    const char *getModelNumber();
+    const char *getSoftwareRevision();
+    const char *getSerialNumber();
+    const char *getFirmwareRevision();
+    const char *getHardwareRevision();
     bool getEnableOutputReport();
+    bool getEnableNordicUARTService();
     uint16_t getOutputReportLength();
+    int8_t getTXPowerLevel();
 
     void setControllerType(uint8_t controllerType);
     void setAutoReport(bool value);
@@ -306,20 +330,26 @@ public:
     void setIncludeBrake(bool value);
     void setIncludeSteering(bool value);
     void setWhichSimulationControls(bool rudder, bool throttle, bool accelerator, bool brake, bool steering);
+    void setIncludeGyroscope(bool value);
+    void setIncludeAccelerometer(bool value);
     void setVid(uint16_t value);
     void setPid(uint16_t value);
-	void setGuidVersion(uint16_t value);
+    void setGuidVersion(uint16_t value);
     void setAxesMin(int16_t value);
     void setAxesMax(int16_t value);
     void setSimulationMin(int16_t value);
     void setSimulationMax(int16_t value);
-    void setModelNumber(char *value);
-    void setSoftwareRevision(char *value);
-    void setSerialNumber(char *value);
-    void setFirmwareRevision(char *value);
-    void setHardwareRevision(char *value);
+    void setMotionMin(int16_t value);
+    void setMotionMax(int16_t value);
+    void setModelNumber(const char *value);
+    void setSoftwareRevision(const char *value);
+    void setSerialNumber(const char *value);
+    void setFirmwareRevision(const char *value);
+    void setHardwareRevision(const char *value);
     void setEnableOutputReport(bool value);
+    void setEnableNordicUARTService(bool value);
     void setOutputReportLength(uint16_t value);
+    void setTXPowerLevel(int8_t value);
 };
 
 #endif

@@ -1,6 +1,6 @@
 /*
  * Shows how to use a 4 x 4 keypad, commonly seen in Arduino starter kits, with the library
- * https://www.aliexpress.com/item/32879638645.html
+ * https://www.aliexpress.com/w/wholesale-Arduino-4*4-Matrix-Keyboard.html
  * It maps the 16 buttons to the first 16 buttons of the controller
  * Only certain combinations work for multiple presses over 2 buttons
  */
@@ -28,8 +28,8 @@ Keypad customKeypad = Keypad(makeKeymap(keymap), rowPins, colPins, ROWS, COLS);
 void setup()
 {
     BleGamepadConfiguration bleGamepadConfig;
-    bleGamepadConfig.setAutoReport(false); // Disable auto reports --> You then need to force HID updates with bleGamepad.sendReport()
-    bleGamepad.begin();                    // Begin library with default buttons/hats/axes
+    bleGamepadConfig.setAutoReport(false);        // Disable auto reports --> You then need to force HID updates with bleGamepad.sendReport()
+    bleGamepad.begin(&bleGamepadConfig);          // Begin library with set values
 
     // changing bleGamepadConfig after the begin function has no effect, unless you call the begin function again
 }

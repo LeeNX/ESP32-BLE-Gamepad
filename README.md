@@ -1,21 +1,9 @@
-## POSSIBLE BREAKING CHANGES - PLEASE READ
-A large code rebase (configuration class) along with some extra features (start, select, menu, home, back, volume up, volume down and volume mute buttons) has been committed thanks to @dexterdy
-
-Since version 5 of this library, the axes and simulation controls have configurable min and max values
-The decision was made to set defaults to 0 for minimum and 32767 for maximum (previously -32767 to 32767)
-This was due to the fact that non-Windows operating systems and some online web-based game controller testers didn't play well with negative numbers. Existing sketches should take note, and see the DrivingControllerTest example for how to set back to -32767 if wanted
-
-This version endeavors to be compatible with the latest released version of NimBLE-Arduino through the Arduino Library Manager; currently version 2.1.3 at the time of this writing; --> https://github.com/h2zero/NimBLE-Arduino/releases/tag/2.1.3
-
-Please see updated examples
-
-## NimBLE
-Since version 3 of this library, the more efficient NimBLE library is used instead of the default BLE implementation
-Please use the library manager to install it, or get it from here: https://github.com/h2zero/NimBLE-Arduino
-Since version 3, this library also supports a configurable HID desciptor, which allows users to customise how the device presents itself to the OS (number of buttons, hats, axes, sliders, simulation controls etc).
-See the examples for guidance.
-
 # ESP32-BLE-Gamepad
+
+![Build](https://github.com/lemmingDev/ESP32-BLE-Gamepad/actions/workflows/main.yml/badge.svg)
+![PlatformIO](https://github.com/lemmingDev/ESP32-BLE-Gamepad/actions/workflows/platformio.yml/badge.svg)
+
+Bluetooth LE Gamepad library for the ESP32
 
 ## License
 Published under the MIT license. Please see license.txt.
@@ -26,7 +14,10 @@ It would be great however if any improvements are fed back into this version.
 
  - [x] Button press (128 buttons)
  - [x] Button release (128 buttons)
- - [x] Axes movement (6 axes (configurable resolution up to 16 bit) (x, y, z, rZ, rX, rY) --> (Left Thumb X, Left Thumb Y, Right Thumb X, Right Thumb Y, Left Trigger, Right Trigger))
+ - [x] Axes movement (6 axes (configurable resolution up to 16 bit) (x, y, z, rX, rY, rZ) --> In Windows usually (Left Thumb X, Left Thumb Y, Right Thumb X, Left Trigger, Right Trigger, Right Thumb Y))
+ - [x] Gyroscope and Accelerometer
+ - [x] Set battery percentage
+ - [x] Set battery power state information using UUID 0x2A1A. Use nRF Connect on Android for example to see this information
  - [x] 2 Sliders (configurable resolution up to 16 bit) (Slider 1 and Slider 2)
  - [x] 4 point of view hats (ie. d-pad plus 3 other hat switches)
  - [x] Simulation controls (rudder, throttle, accelerator, brake, steering)
@@ -36,13 +27,36 @@ It would be great however if any improvements are fed back into this version.
  - [x] Configurable BLE characteristics (name, manufacturer, model number, software revision, serial number, firmware revision, hardware revision)	
  - [x] Report optional battery level to host
  - [x] Uses efficient NimBLE bluetooth library
- - [x] Output report function
+ - [x] HID Output Report function
+ - [ ] HID Feature Report function
+ - [x] Functions available for force pairing/ignore current client and/or delete pairings
+ - [x] Nordic UART Service (NUS) functionality at same time as gamepad. See examples
  - [x] Compatible with Windows
- - [x] Compatible with Android (Android OS maps default buttons / axes / hats slightly differently than Windows)
+ - [x] Compatible with Android (Android OS maps default buttons / axes / hats slightly differently than Windows) (see notes)
  - [x] Compatible with Linux (limited testing)
  - [x] Compatible with MacOS X (limited testing)
  - [ ] Compatible with iOS (No - not even for accessibility switch - This is not a “Made for iPhone” (MFI) compatible device)
-                           (Use the Xinput fork suggested below which has been tested to work) 
+                           (Use the Xinput fork suggested below which has been tested to work)
+
+## NimBLE
+Since version 3 of this library, the more efficient NimBLE library is used instead of the default BLE implementation
+Please use the library manager to install it, or get it from here: https://github.com/h2zero/NimBLE-Arduino
+Since version 3, this library also supports a configurable HID desciptor, which allows users to customise how the device presents itself to the OS (number of buttons, hats, axes, sliders, simulation controls etc).
+See the examples for guidance.
+
+## POSSIBLE BREAKING CHANGES - PLEASE READ
+A large code rebase (configuration class) along with some extra features (start, select, menu, home, back, volume up, volume down and volume mute buttons) has been committed thanks to @dexterdy
+
+Since version 5 of this library, the axes and simulation controls have configurable min and max values
+The decision was made to set defaults to 0 for minimum and 32767 for maximum (previously -32767 to 32767)
+This was due to the fact that non-Windows operating systems and some online web-based game controller testers didn't play well with negative numbers. Existing sketches should take note, and see the DrivingControllerTest example for how to set back to -32767 if wanted
+
+This version endeavors to be compatible with the latest released version of NimBLE-Arduino through the Arduino Library Manager; currently version 2.2.1 at the time of this writing; --> https://github.com/h2zero/NimBLE-Arduino/releases/tag/2.2.1
+
+setAxes accepts axes in the order (x, y, z, rx, ry, rz)
+setHIDAxes accepts them in the order (x, y, z, rz, rx, ry)
+
+Please see updated examples
 
 ## Installation
 - (Make sure you can use the ESP32 with the Arduino IDE. [Instructions can be found here.](https://github.com/espressif/arduino-esp32#installation-instructions))
@@ -69,6 +83,9 @@ It would be great however if any improvements are fed back into this version.
  *
  * bleGamepad.setAxes sets all axes at once. There are a few:
  * (x axis, y axis, z axis, rx axis, ry axis, rz axis, slider 1, slider 2)
+ *
+ * Alternatively, bleGamepad.setHIDAxes sets all axes at once. in the order of:
+ * (x axis, y axis, z axis, rz axis, ry axis, rz axis, slider 1, slider 2)  <- order HID report is actually given in
  *
  * Library can also be configured to support up to 5 simulation controls
  * (rudder, throttle, accelerator, brake, steering), but they are not enabled by default.
@@ -99,7 +116,8 @@ void loop()
         bleGamepad.press(BUTTON_5);
         bleGamepad.press(BUTTON_16);
         bleGamepad.pressStart();
-        bleGamepad.setAxes(32767, 32767, 32767, 32767, 32767, 32767, 32767, 32767);
+        bleGamepad.setAxes(32767, 32767, 32767, 32767, 32767, 32767, 32767, 32767);       //(X, Y, Z, RX, RY, RZ)
+        //bleGamepad.setHIDAxes(32767, 32767, 32767, 32767, 32767, 32767, 32767, 32767);  //(X, Y, Z, RZ, RX, RY)
         bleGamepad.setHat1(HAT_DOWN_RIGHT);
         // All axes, sliders, hats etc can also be set independently. See the IndividualAxes.ino example
         delay(500);
@@ -108,10 +126,12 @@ void loop()
         bleGamepad.release(BUTTON_5);
         bleGamepad.releaseStart();
         bleGamepad.setHat1(HAT_CENTERED);
-        bleGamepad.setAxes(0, 0, 0, 0, 0, 0, 0, 0);
+        bleGamepad.setAxes(0, 0, 0, 0, 0, 0, 0, 0);           //(X, Y, Z, RX, RY, RZ)
+        //bleGamepad.setHIDAxes(0, 0, 0, 0, 0, 0, 0, 0);      //(X, Y, Z, RZ, RX, RY)
         delay(500);
     }
 }
+
 ```
 By default, reports are sent on every button press/release or axis/slider/hat/simulation movement, however this can be disabled, and then you manually call sendReport on the gamepad instance as shown in the IndividualAxes.ino example.
 
@@ -127,6 +147,9 @@ Battery level can be set during operation by calling, for example, bleGamepad.se
 Update sent on next gamepad update if auto reporting is not enabled
 
 
+## Troubleshooting Guide
+Troubleshooting guide and suggestions can be found in [TroubleshootingGuide](TroubleshootingGuide.md)
+
 ## Credits
 Credits to [T-vK](https://github.com/T-vK) as this library is based on his ESP32-BLE-Mouse library (https://github.com/T-vK/ESP32-BLE-Mouse) that he provided.
 
@@ -140,6 +163,11 @@ Relies on [NimBLE-Arduino](https://github.com/h2zero/NimBLE-Arduino)
 
 Use [this](http://www.planetpointy.co.uk/joystick-test-application/) Windows test app to test/see all of the buttons
 Ensure you have Direct X 9 installed
+
+Gamepads desgined for Android use a different button mapping. This effects analog triggers, where the standard left and right trigger axes are not detected.
+Android calls the HID report for right trigger `"GAS"` and left trigger `"BRAKE"`. Enabling the `"Accelerator"` and `"Brake"` simulation controls allows them to be used instead of right and left trigger.
+
+Right thumbstick on Windows is usually z, rz, whereas on Android, this may be z, rx, so you may want to set them separately with setZ and setRX, instead of using setRightThumb(z, rz), or use setRightThumbAndroid(z, rx)
 
 You might also be interested in:
 - [ESP32-BLE-Mouse](https://github.com/T-vK/ESP32-BLE-Mouse)

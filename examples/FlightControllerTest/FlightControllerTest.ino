@@ -10,9 +10,9 @@
 #define enableX true
 #define enableY true
 #define enableZ false
-#define enableRZ false
 #define enableRX false
 #define enableRY false
+#define enableRZ false
 #define enableSlider1 false
 #define enableSlider2 false
 #define enableRudder true

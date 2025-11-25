@@ -45,7 +45,7 @@ void setup()
 
     BleGamepadConfiguration bleGamepadConfig;
     bleGamepadConfig.setAutoReport(false);
-	bleGamepadConfig.setWhichAxes(0, 0, 0, 0, 0, 0, 0, 0);	// Disable all axes
+    bleGamepadConfig.setWhichAxes(0, 0, 0, 0, 0, 0, 0, 0);	// Disable all axes
     bleGamepadConfig.setButtonCount(numOfButtons);
     bleGamepadConfig.setHatSwitchCount(numOfHats);
     bleGamepad.begin(&bleGamepadConfig);
@@ -124,7 +124,9 @@ void loop()
         bleGamepad.setHats(hatValues[0], hatValues[1], hatValues[2], hatValues[3]);
 
         // Update previous states to current states and send report
-        if (currentButtonStates != previousButtonStates || currentHatStates != previousHatStates)
+        // readable, but with compiler warning:
+        //  if (currentButtonStates != previousButtonStates || currentHatStates != previousHatStates)
+        if ((memcmp((const void *)currentButtonStates, (const void *)previousButtonStates, sizeof(currentButtonStates)) != 0) && (memcmp((const void *)currentHatStates, (const void *)previousHatStates, sizeof(currentHatStates)) != 0))
         {
             for (byte currentIndex = 0; currentIndex < numOfButtons; currentIndex++)
             {

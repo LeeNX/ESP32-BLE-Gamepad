@@ -11,18 +11,32 @@
 #include "NimBLECharacteristic.h"
 #include "BleGamepadConfiguration.h"
 #include "BleOutputReceiver.h"
+#include "BleNUS.h"
+
+// Debug enabled, disabled by default
+#ifndef BLE_GAMEPAD_DEBUG
+#define BLE_GAMEPAD_DEBUG 0
+#endif
 
 class BleGamepad
 {
-private:
-    uint8_t _buttons[16]; // 8 bits x 16 --> 128 bits
+  private:
+    std::string deviceManufacturer;
+    std::string deviceName;
+    uint8_t tempHidReportDescriptor[150];
+    int hidReportDescriptorSize;
+    uint8_t hidReportSize;
+    uint8_t numOfButtonBytes;
+    bool enableOutputReport;
+    uint16_t outputReportLength;
+    uint8_t _buttons[16]; // 8 bits x 16 bytes = 128 bits --> 128 button max
     uint8_t _specialButtons;
     int16_t _x;
     int16_t _y;
     int16_t _z;
-    int16_t _rZ;
     int16_t _rX;
     int16_t _rY;
+    int16_t _rZ;
     int16_t _slider1;
     int16_t _slider2;
     int16_t _rudder;
@@ -34,28 +48,42 @@ private:
     int16_t _hat2;
     int16_t _hat3;
     int16_t _hat4;
-
-    BleGamepadConfiguration configuration;
-
+    int16_t _gX;
+    int16_t _gY;
+    int16_t _gZ;
+    int16_t _aX;
+    int16_t _aY;
+    int16_t _aZ;
+    uint8_t _batteryPowerInformation;
+    uint8_t _dischargingState;
+    uint8_t _chargingState;
+    uint8_t _powerLevel;
+    bool nusInitialized;
+    
     BleConnectionStatus *connectionStatus;
-
     BleOutputReceiver *outputReceiver;
-
+    NimBLEServer *pServer;
+    BleNUS* nus;
+    
     NimBLEHIDDevice *hid;
     NimBLECharacteristic *inputGamepad;
     NimBLECharacteristic *outputGamepad;
-    
+    NimBLECharacteristic *pCharacteristic_Power_State;
+
     uint8_t *outputBackupBuffer;
 
     void rawAction(uint8_t msg[], char msgSize);
     static void taskServer(void *pvParameter);
     uint8_t specialButtonBitPosition(uint8_t specialButton);
 
-public:
-    BleGamepad(std::string deviceName = "ESP32 BLE Gamepad", std::string deviceManufacturer = "Espressif", uint8_t batteryLevel = 100);
+  public:
+    BleGamepadConfiguration configuration;
+    
+    BleGamepad(std::string deviceName = "ESP32 BLE Gamepad", std::string deviceManufacturer = "Espressif", uint8_t batteryLevel = 100, bool delayAdvertising = false);
     void begin(BleGamepadConfiguration *config = new BleGamepadConfiguration());
     void end(void);
-    void setAxes(int16_t x = 0, int16_t y = 0, int16_t z = 0, int16_t rZ = 0, int16_t rX = 0, int16_t rY = 0, int16_t slider1 = 0, int16_t slider2 = 0);
+    void setAxes(int16_t x = 0, int16_t y = 0, int16_t z = 0, int16_t rX = 0, int16_t rY = 0, int16_t rZ = 0, int16_t slider1 = 0, int16_t slider2 = 0);
+    void setHIDAxes(int16_t x = 0, int16_t y = 0, int16_t z = 0, int16_t rZ = 0, int16_t rX = 0, int16_t rY = 0, int16_t slider1 = 0, int16_t slider2 = 0);
     void press(uint8_t b = BUTTON_1);   // press BUTTON_1 by default
     void release(uint8_t b = BUTTON_1); // release BUTTON_1 by default
     void pressSpecialButton(uint8_t b);
@@ -78,6 +106,7 @@ public:
     void releaseVolumeMute();
     void setLeftThumb(int16_t x = 0, int16_t y = 0);
     void setRightThumb(int16_t z = 0, int16_t rZ = 0);
+    void setRightThumbAndroid(int16_t z = 0, int16_t rX = 0);
     void setLeftTrigger(int16_t rX = 0);
     void setRightTrigger(int16_t rY = 0);
     void setTriggers(int16_t rX = 0, int16_t rY = 0);
@@ -108,14 +137,35 @@ public:
     bool isConnected(void);
     void resetButtons();
     void setBatteryLevel(uint8_t level);
+    void setPowerStateAll(uint8_t batteryPowerInformation, uint8_t dischargingState, uint8_t chargingState, uint8_t powerLevel);
+    void setBatteryPowerInformation(uint8_t batteryPowerInformation);
+    void setDischargingState(uint8_t dischargingState);
+    void setChargingState(uint8_t chargingState);
+    void setPowerLevel(uint8_t powerLevel);
+    void setTXPowerLevel(int8_t level = 9);
+    int8_t getTXPowerLevel();
     uint8_t batteryLevel;
-    std::string deviceManufacturer;
-    std::string deviceName;
+    bool delayAdvertising;
     bool isOutputReceived();
     uint8_t* getOutputBuffer();
+    bool deleteBond(bool resetBoard = false);
+    bool deleteAllBonds(bool resetBoard = false);
+    bool enterPairingMode();
+    NimBLEAddress getAddress();
+    String getStringAddress();
+    NimBLEConnInfo getPeerInfo();
+    String getDeviceName();
+    String getDeviceManufacturer();
+    void setGyroscope(int16_t gX = 0, int16_t gY = 0, int16_t gZ = 0);
+    void setAccelerometer(int16_t aX = 0, int16_t aY = 0, int16_t aZ = 0);
+    void setMotionControls(int16_t gX = 0, int16_t gY = 0, int16_t gZ = 0, int16_t aX = 0, int16_t aY = 0, int16_t aZ = 0);
+    void beginNUS();
+    void sendDataOverNUS(const uint8_t* data, size_t length);
+    void setNUSDataReceivedCallback(void (*callback)(const uint8_t* data, size_t length));
+    BleNUS* getNUS();
 
-protected:
-    virtual void onStarted(NimBLEServer *pServer){};
+  protected:
+    virtual void onStarted(NimBLEServer *pServer) {};
 };
 
 #endif // CONFIG_BT_NIMBLE_ROLE_PERIPHERAL
