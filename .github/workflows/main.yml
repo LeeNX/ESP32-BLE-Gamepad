@@ -63,7 +63,7 @@ jobs:
 #            - examples/SingleButtonDebounce/SingleButtonDebounce.ino
 #            - examples/SpecialButtons/SpecialButtons.ino
 #            - examples/TestAll/TestAll.ino
-#            - examples/TestReceivingOutputReport/TestReceivingOutputReport.ino
+            - examples/TestReceivingOutputReport/TestReceivingOutputReport.ino
           libraries: |
             - name: NimBLE-Arduino
             - name: Keypad
