@@ -87,7 +87,7 @@ jobs:
           gh api \
             -H "Accept: application/vnd.github+json" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
-            repos/$REPO/actions/artifacts/$ART_ID
+            repos/$REPO/actions/artifacts/$ART_ID/zip
 
           unzip report-size-data.zip -d ./report-size-data
 
