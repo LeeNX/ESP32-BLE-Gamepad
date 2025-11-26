@@ -22,7 +22,17 @@ jobs:
       pull-requests: write
 
     steps:
+      - name: Check if PR exists
+        run: |
+          if [ "${{ github.event.workflow_run.pull_requests[0] }}" = "" ]; then
+            echo "No PR detected — this was triggered by PUSH";
+          else
+            echo "PR detected:";
+            echo "${{ toJson(github.event.workflow_run.pull_requests[0]) }}";
+          fi
+
       - name: Download report size data
+        if: ${{ false }}
         uses: actions/download-artifact@v6
         with:
           name: report-size-data
@@ -33,6 +43,53 @@ jobs:
         with:
           # If you rely on full history or special refs, include fetch-depth: 0
           fetch-depth: 0
+
+      # List artifacts from the triggering workflow run
+      - name: Debug: list artifacts
+        id: list-artifacts
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          REPO: ${{ github.repository }}
+        run: |
+          echo "Listing artifacts for workflow run $RUN_ID"
+          gh api repos/$REPO/actions/runs/$RUN_ID/artifacts \
+            --jq '.artifacts[] | {id: .id, name: .name, size: .size_in_bytes}'
+
+      # Get artifact ID for report-size-data
+      - name: Get artifact ID
+        id: artifact
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          REPO: ${{ github.repository }}
+        run: |
+          ARTIFACT_ID=$(gh api repos/$REPO/actions/runs/$RUN_ID/artifacts \
+            --jq '.artifacts[] | select(.name=="report-size-data") | .id')
+
+          if [ -z "$ARTIFACT_ID" ]; then
+            echo "No artifact 'report-size-data' found. Exiting."
+            exit 0
+          fi
+
+          echo "Found artifact ID: $ARTIFACT_ID"
+          echo "artifact_id=$ARTIFACT_ID" >> $GITHUB_OUTPUT
+
+      # Download artifact using ID
+      - name: Download report-size-data
+        if: steps.artifact.outputs.artifact_id
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ART_ID: ${{ steps.artifact.outputs.artifact_id }}
+          REPO: ${{ github.repository }}
+        run: |
+          echo "Downloading artifact $ART_ID"
+          gh api \
+            repos/$REPO/actions/artifacts/$ART_ID/zip \
+            --method GET \
+            --output artifact.zip
+
+          unzip artifact.zip -d ./artifact
 
       - name: Post report size deltas
         uses: arduino/report-size-deltas@v1
