@@ -37,18 +37,6 @@ jobs:
           # If you rely on full history or special refs, include fetch-depth: 0
           fetch-depth: 0
 
-      # List artifacts from the triggering workflow run
-      - name: Debug - list artifacts
-        id: list-artifacts
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RUN_ID: ${{ github.event.workflow_run.id }}
-          REPO: ${{ github.repository }}
-        run: |
-          echo "Listing artifacts for workflow run $RUN_ID"
-          gh api repos/$REPO/actions/runs/$RUN_ID/artifacts \
-            --jq '.artifacts[] | {id: .id, name: .name, size: .size_in_bytes}'
-
       # Get artifact ID for report-size-data
       - name: Get artifact ID
         id: artifact
@@ -68,18 +56,19 @@ jobs:
           echo "Found artifact ID: $ARTIFACT_ID"
           echo "artifact_id=$ARTIFACT_ID" >> $GITHUB_OUTPUT
 
-      - name: Download report size data
-        if: ${{ false }}
+      - name: Download report size data - action
+        # if: ${{ false }}
         uses: actions/download-artifact@v6
         with:
           name: report-size-data
           run-id: ${{ github.event.workflow_run.id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          artifact-ids: ${{ env.ARTIFACT_ID }}
+          # artifact-ids: ${{ env.ARTIFACT_ID }}
 
       # Download artifact using ID
-      - name: Download report-size-data
-        if: steps.artifact.outputs.artifact_id
+      - name: Download report-size-data - shell
+        # if: steps.artifact.outputs.artifact_id
+        if: ${{ false }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ART_ID: ${{ steps.artifact.outputs.artifact_id }}
@@ -92,6 +81,10 @@ jobs:
             repos/$REPO/actions/artifacts/$ART_ID/zip > report-size-data.zip
 
           unzip report-size-data.zip -d ./report-size-data
+
+      - name: Debug - list folder
+        run: |
+          ls -la
 
       - name: Post report size deltas
         uses: arduino/report-size-deltas@v1
