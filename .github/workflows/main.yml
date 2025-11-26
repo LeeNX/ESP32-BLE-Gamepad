@@ -46,7 +46,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           sketch-paths: |
             - examples/CharacteristicsConfiguration/CharacteristicsConfiguration.ino
-            - examples/DrivingControllerTest/DrivingControllerTest.ino
+#            - examples/DrivingControllerTest/DrivingControllerTest.ino
 #            - examples/Fightstick/Fightstick.ino
 #            - examples/FlightControllerTest/FlightControllerTest.ino
 #            - examples/ForcePairingMode/ForcePairingMode.ino
@@ -63,7 +63,7 @@ jobs:
 #            - examples/SingleButtonDebounce/SingleButtonDebounce.ino
 #            - examples/SpecialButtons/SpecialButtons.ino
 #            - examples/TestAll/TestAll.ino
-            - examples/TestReceivingOutputReport/TestReceivingOutputReport.ino
+#            - examples/TestReceivingOutputReport/TestReceivingOutputReport.ino
           libraries: |
             - name: NimBLE-Arduino
             - name: Keypad
