@@ -74,4 +74,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: report-size-data
-          path: ${{ steps.compile.outputs.sizes-json-path }}
+          # path: ${{ steps.compile.outputs.sizes-json-path }}
+          path: sketches-reports
+
