@@ -37,25 +37,6 @@ jobs:
           # If you rely on full history or special refs, include fetch-depth: 0
           fetch-depth: 0
 
-      # Get artifact ID for report-size-data
-      - name: Get artifact ID
-        id: artifact
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RUN_ID: ${{ github.event.workflow_run.id }}
-          REPO: ${{ github.repository }}
-        run: |
-          ARTIFACT_ID=$(gh api repos/$REPO/actions/runs/$RUN_ID/artifacts \
-            --jq '.artifacts[] | select(.name=="report-size-data") | .id')
-
-          if [ -z "$ARTIFACT_ID" ]; then
-            echo "No artifact 'report-size-data' found. Exiting."
-            exit 0
-          fi
-
-          echo "Found artifact ID: $ARTIFACT_ID"
-          echo "artifact_id=$ARTIFACT_ID" >> $GITHUB_OUTPUT
-
       - name: Download report size data - action
         # if: ${{ false }}
         uses: actions/download-artifact@v6
@@ -63,24 +44,6 @@ jobs:
           name: report-size-data
           run-id: ${{ github.event.workflow_run.id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          # artifact-ids: ${{ env.ARTIFACT_ID }}
-
-      # Download artifact using ID
-      - name: Download report-size-data - shell
-        # if: steps.artifact.outputs.artifact_id
-        if: ${{ false }}
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ART_ID: ${{ steps.artifact.outputs.artifact_id }}
-          REPO: ${{ github.repository }}
-        run: |
-          echo "Downloading artifact $ART_ID"
-          gh api \
-            -H "Accept: application/vnd.github+json" \
-            -H "X-GitHub-Api-Version: 2022-11-28" \
-            repos/$REPO/actions/artifacts/$ART_ID/zip > report-size-data.zip
-
-          unzip report-size-data.zip -d ./report-size-data
 
       - name: Debug - list folder
         run: |
@@ -90,4 +53,4 @@ jobs:
         uses: arduino/report-size-deltas@v1
         with:
           # sketches-reports-source: ./report-size-data/esp32-esp32-esp32.json
-          sketches-reports-source: report-size-data
+          # sketches-reports-source: report-size-data
