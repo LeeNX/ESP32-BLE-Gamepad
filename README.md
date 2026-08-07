@@ -26,6 +26,8 @@ It would be great however if any improvements are fed back into this version.
  - [x] Configurable VID and PID values
  - [x] Configurable BLE characteristics (name, manufacturer, model number, software revision, serial number, firmware revision, hardware revision)	
  - [x] Report optional battery level to host
+ - [x] Optional battery level + simplified power state (unknown/charging/on battery/full) fields in the HID input report itself, for hosts that read raw HID reports instead of/as well as GATT (`setIncludeBatteryLevelInReport`, `setIncludePowerStateInReport`, `setPowerState`). Off by default - see the `AdvancedBatteryReporting` example
+ - [x] Optional always-on BLE advertising Manufacturer Specific Data broadcasting battery level + simplified power state, readable by a passive scanner without connecting (`setEnableManufacturerData`, `setManufacturerCompanyId`). Off by default - see the `AdvancedBatteryReporting` example
  - [x] Uses efficient NimBLE bluetooth library
  - [x] HID Output Report function
  - [ ] HID Feature Report function

@@ -27,7 +27,12 @@ BleGamepadConfiguration::BleGamepadConfiguration() : _controllerType(CONTROLLER_
                                                      _enableOutputReport(false),
                                                      _enableNordicUARTService(false),
                                                      _outputReportLength(64),
-                                                     _transmitPowerLevel(9)
+                                                     _transmitPowerLevel(9),
+                                                     _includeBatteryLevelInReport(false),
+                                                     _includePowerStateInReport(false),
+                                                     _enableManufacturerData(false),
+                                                     _manufacturerCompanyId(0xFFFF),
+                                                     _manufacturerDataUpdateIntervalMs(5000)
 {
 }
 
@@ -135,6 +140,11 @@ bool BleGamepadConfiguration::getEnableOutputReport(){ return _enableOutputRepor
 bool BleGamepadConfiguration::getEnableNordicUARTService(){ return _enableNordicUARTService; }
 uint16_t BleGamepadConfiguration::getOutputReportLength(){ return _outputReportLength; }
 int8_t BleGamepadConfiguration::getTXPowerLevel(){ return _transmitPowerLevel; }	// Returns the power level that was set as the server started
+bool BleGamepadConfiguration::getIncludeBatteryLevelInReport(){ return _includeBatteryLevelInReport; }
+bool BleGamepadConfiguration::getIncludePowerStateInReport(){ return _includePowerStateInReport; }
+bool BleGamepadConfiguration::getEnableManufacturerData(){ return _enableManufacturerData; }
+uint16_t BleGamepadConfiguration::getManufacturerCompanyId(){ return _manufacturerCompanyId; }
+uint32_t BleGamepadConfiguration::getManufacturerDataUpdateInterval(){ return _manufacturerDataUpdateIntervalMs; }
 
 void BleGamepadConfiguration::setWhichSpecialButtons(bool start, bool select, bool menu, bool home, bool back, bool volumeInc, bool volumeDec, bool volumeMute)
 {
@@ -215,3 +225,8 @@ void BleGamepadConfiguration::setEnableOutputReport(bool value) { _enableOutputR
 void BleGamepadConfiguration::setEnableNordicUARTService(bool value) { _enableNordicUARTService = value; }
 void BleGamepadConfiguration::setOutputReportLength(uint16_t value) { _outputReportLength = value; }
 void BleGamepadConfiguration::setTXPowerLevel(int8_t value) { _transmitPowerLevel = value; }
+void BleGamepadConfiguration::setIncludeBatteryLevelInReport(bool value) { _includeBatteryLevelInReport = value; }
+void BleGamepadConfiguration::setIncludePowerStateInReport(bool value) { _includePowerStateInReport = value; }
+void BleGamepadConfiguration::setEnableManufacturerData(bool value) { _enableManufacturerData = value; }
+void BleGamepadConfiguration::setManufacturerCompanyId(uint16_t value) { _manufacturerCompanyId = value; }
+void BleGamepadConfiguration::setManufacturerDataUpdateInterval(uint32_t value) { _manufacturerDataUpdateIntervalMs = value; }

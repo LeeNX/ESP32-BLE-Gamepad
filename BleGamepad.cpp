@@ -1,6 +1,7 @@
 #include <NimBLEDevice.h>
 #include <NimBLEUtils.h>
 #include <NimBLEServer.h>
+#include <NimBLEAdvertising.h>
 #include "NimBLEHIDDevice.h"
 #include "HIDTypes.h"
 #include "HIDKeyboardTypes.h"
@@ -28,6 +29,9 @@ static const char *LOG_TAG = "BLEGamepad";
 #define CHARACTERISTIC_UUID_FIRMWARE_REVISION   "2A26"      // Characteristic - Firmware Revision String - 0x2A26
 #define CHARACTERISTIC_UUID_HARDWARE_REVISION   "2A27"      // Characteristic - Hardware Revision String - 0x2A27
 #define CHARACTERISTIC_UUID_BATTERY_POWER_STATE "2A1A"      // Characteristic - Battery Power State - 0x2A1A
+
+#define BLE_ADV_MANUFACTURER_DATA_AD_TYPE 0xFF  // GAP AD Type - Manufacturer Specific Data
+#define BLE_ADV_MAX_PAYLOAD_SIZE          31    // Legacy (non-extended) BLE advertising packet payload limit
 
 #define POWER_STATE_UNKNOWN         0 // 0b00
 #define POWER_STATE_NOT_SUPPORTED   1 // 0b01
@@ -73,10 +77,13 @@ BleGamepad::BleGamepad(std::string deviceName, std::string deviceManufacturer, u
   _dischargingState(0),
   _chargingState(0),
   _powerLevel(0),
+  _reportPowerState(GAMEPAD_POWER_STATE_UNKNOWN),
+  _lastManufacturerDataPushMs(0),
   hid(0),
   pCharacteristic_Power_State(0),
   configuration(),
-  pServer(nullptr), 
+  pServer(nullptr),
+  pAdvertising(nullptr),
   nus(nullptr)
 {
   this->resetButtons();
@@ -143,6 +150,16 @@ void BleGamepad::begin(BleGamepadConfiguration *config)
   }
 
   hidReportSize = numOfButtonBytes + numOfSpecialButtonBytes + numOfAxisBytes + numOfSimulationBytes + numOfMotionBytes + configuration.getHatSwitchCount();
+
+  if (configuration.getIncludeBatteryLevelInReport())
+  {
+    hidReportSize += 1;
+  }
+
+  if (configuration.getIncludePowerStateInReport())
+  {
+    hidReportSize += 1;
+  }
 
   // USAGE_PAGE (Generic Desktop)
   tempHidReportDescriptor[hidReportDescriptorSize++] = 0x05;
@@ -725,6 +742,68 @@ void BleGamepad::begin(BleGamepadConfiguration *config)
     tempHidReportDescriptor[hidReportDescriptorSize++] = 0xc0;
   } // Hat Switches
 
+  if (configuration.getIncludeBatteryLevelInReport())
+  {
+    // USAGE_PAGE (Generic Desktop)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x05;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x01;
+
+    // USAGE (Battery Strength)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x09;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x3B;
+
+    // LOGICAL_MINIMUM (0)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x15;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x00;
+
+    // LOGICAL_MAXIMUM (100)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x25;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x64;
+
+    // REPORT_SIZE (8)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x75;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x08;
+
+    // REPORT_COUNT (1)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x95;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x01;
+
+    // INPUT (Data,Var,Abs)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x81;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x02;
+  } // Battery Level
+
+  if (configuration.getIncludePowerStateInReport())
+  {
+    // USAGE_PAGE (Vendor Defined 0xFF00)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x06;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x00;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0xFF;
+
+    // USAGE (Vendor Usage 0x02 - Power State)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x09;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x02;
+
+    // LOGICAL_MINIMUM (0)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x15;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x00;
+
+    // LOGICAL_MAXIMUM (3)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x25;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x03;
+
+    // REPORT_SIZE (8)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x75;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x08;
+
+    // REPORT_COUNT (1)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x95;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x01;
+
+    // INPUT (Data,Var,Abs)
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x81;
+    tempHidReportDescriptor[hidReportDescriptorSize++] = 0x02;
+  } // Power State (0 = Unknown, 1 = Charging, 2 = On Battery, 3 = Full)
 
   if (configuration.getEnableOutputReport())
   {
@@ -1072,7 +1151,17 @@ void BleGamepad::sendReport(void)
         m[currentReportIndex++] = hats[currentHatIndex];
       }
     }
-  
+
+    if (configuration.getIncludeBatteryLevelInReport())
+    {
+      m[currentReportIndex++] = this->batteryLevel;
+    }
+
+    if (configuration.getIncludePowerStateInReport())
+    {
+      m[currentReportIndex++] = this->_reportPowerState;
+    }
+
     #if BLE_GAMEPAD_DEBUG == 1
       dumpHIDReport(m, sizeof(m));
     #endif
@@ -1657,6 +1746,15 @@ void BleGamepad::setBatteryLevel(uint8_t level)
       sendReport();
     }
   }
+
+  if (configuration.getEnableManufacturerData())
+  {
+    // Legacy advertising is paused entirely while a client is connected, so there's nothing to push
+    // live right now - just stage the data (no host call). It'll go out the moment advertising
+    // resumes on disconnect: NimBLEAdvertising::start() (called automatically via
+    // advertiseOnDisconnect(true)) pushes m_advData live whenever a staged update marked it dirty.
+    updateManufacturerData(!this->isConnected());
+  }
 }
 
 bool BleGamepad::isOutputReceived()
@@ -1827,6 +1925,27 @@ String BleGamepad::getDeviceManufacturer()
   return this->deviceManufacturer.c_str();
 }
 
+// Hex dump of the current advertising payload. Reflects the latest staged data even while
+// connected (legacy advertising is paused then, so nothing is actually on air), and the live
+// broadcast payload while actually advertising.
+String BleGamepad::getAdvertisingDataString()
+{
+  if (this->pAdvertising == nullptr)
+  {
+    return "";
+  }
+  return this->pAdvertising->getAdvertisementData().toString().c_str();
+}
+
+bool BleGamepad::isAdvertising()
+{
+  if (this->pAdvertising == nullptr)
+  {
+    return false;
+  }
+  return this->pAdvertising->isAdvertising();
+}
+
 int8_t BleGamepad::getTXPowerLevel()
 {
   return NimBLEDevice::getPower();
@@ -1972,6 +2091,131 @@ void BleGamepad::setPowerLevel(uint8_t powerLevel)
 {
   _powerLevel = powerLevel;
   setPowerStateAll(_batteryPowerInformation, _dischargingState, _chargingState, _powerLevel);
+}
+
+// Simplified power state (GAMEPAD_POWER_STATE_UNKNOWN / _CHARGING / _ON_BATTERY / _FULL), independent of the
+// detailed GATT Battery Power State characteristic above. Feeds the optional HID report field and advertising
+// manufacturer data.
+void BleGamepad::setPowerState(uint8_t state)
+{
+  _reportPowerState = state;
+
+  if (configuration.getAutoReport())
+  {
+    sendReport();
+  }
+
+  if (configuration.getEnableManufacturerData())
+  {
+    // Legacy advertising is paused entirely while a client is connected, so there's nothing to push
+    // live right now - just stage the data (no host call). It'll go out the moment advertising
+    // resumes on disconnect: NimBLEAdvertising::start() (called automatically via
+    // advertiseOnDisconnect(true)) pushes m_advData live whenever a staged update marked it dirty.
+    updateManufacturerData(!this->isConnected());
+  }
+}
+
+// pushLive selects how the updated data reaches the BLE stack:
+//  - false: stage the data only (no direct host call) - used for the very first update, made from
+//    taskServer() before the initial pAdvertising->start(). The BLE host is not guaranteed to have
+//    finished syncing with the controller at that point, so - just like the existing setName()/
+//    setAppearance()/addServiceUUID() calls right above it - this only mutates the local advertising
+//    data and lets start() push everything live once the host is confirmed ready.
+//  - true: push the data live via a direct host call - used for every later update from
+//    setBatteryLevel()/setPowerState(), called after begin() has returned, by which point the host
+//    has long since synced (advertising has already started at least once).
+void BleGamepad::updateManufacturerData(bool pushLive)
+{
+  if (this->pAdvertising == nullptr)
+  {
+    #if BLE_GAMEPAD_DEBUG == 1
+      if (Serial) Serial.println("[BLEGamepad][DEBUG] updateManufacturerData - Skipped: pAdvertising not ready yet");
+    #endif
+    return;
+  }
+
+  // Rate-limit the actual over-the-air push. Battery/power state don't need to change every time
+  // setBatteryLevel()/setPowerState() happens to be called (e.g. a sketch polling an ADC every
+  // second) - each live push is a real HCI command to the radio, so throttle it to
+  // getManufacturerDataUpdateInterval() (default 5s, configurable, 0 = no throttling). This only
+  // gates the broadcast: GATT/HID values from setBatteryLevel()/setPowerState() are unaffected and
+  // stay real-time.
+  if (pushLive)
+  {
+    uint32_t interval = configuration.getManufacturerDataUpdateInterval();
+    if (interval > 0 && (millis() - _lastManufacturerDataPushMs) < interval)
+    {
+      #if BLE_GAMEPAD_DEBUG == 1
+        if (Serial)
+        {
+          Serial.printf("[BLEGamepad][DEBUG] updateManufacturerData - Throttled: last live push was %lums ago, interval=%lums\n",
+                        (unsigned long)(millis() - _lastManufacturerDataPushMs), (unsigned long)interval);
+        }
+      #endif
+      return;
+    }
+  }
+
+  uint16_t companyId = configuration.getManufacturerCompanyId();
+
+  uint8_t clampedBattery = (this->batteryLevel > 100) ? 100 : this->batteryLevel;
+  uint8_t scaledBattery = (clampedBattery * 31) / 100; // 0-100 scaled down to 5 bits (0-31, ~3.2% steps)
+  uint8_t powerState = this->_reportPowerState & 0x03; // 2 bits (0-3)
+
+  // Bit-pack power state + battery into a single byte to keep the advertising payload as small as
+  // possible: bits 7-6 = power state, bits 5-1 = scaled battery level, bit 0 reserved.
+  uint8_t packedState = (powerState << 6) | (scaledBattery << 1);
+
+  uint8_t manufacturerData[3];
+  manufacturerData[0] = lowByte(companyId);
+  manufacturerData[1] = highByte(companyId);
+  manufacturerData[2] = packedState;
+
+  // Work on a copy of the current advertisement data and strip any manufacturer data field this
+  // function previously added. NimBLE's setManufacturerData() only appends - it never replaces a
+  // stale field - so calling it directly on every battery/power update would grow the payload
+  // without bound and eventually overflow the advertising packet.
+  NimBLEAdvertisementData advData = this->pAdvertising->getAdvertisementData();
+  advData.removeData(BLE_ADV_MANUFACTURER_DATA_AD_TYPE);
+
+  size_t baseSize = advData.getPayload().size();
+  size_t neededSize = baseSize + 2 + sizeof(manufacturerData);
+
+  #if BLE_GAMEPAD_DEBUG == 1
+    if (Serial)
+    {
+      Serial.printf("[BLEGamepad][DEBUG] updateManufacturerData - pushLive=%d companyId=0x%04X battery=%u(scaled=%u) powerState=%u packed=0x%02X baseAdvSize=%u neededSize=%u limit=%u\n",
+                    pushLive, companyId, this->batteryLevel, scaledBattery, powerState, packedState, (unsigned)baseSize, (unsigned)neededSize, (unsigned)BLE_ADV_MAX_PAYLOAD_SIZE);
+    }
+  #endif
+
+  // Guard against the rest of the advertisement (name, appearance, service UUID, etc.) already
+  // leaving no room for the manufacturer data field (2 header bytes + payload).
+  if (neededSize > BLE_ADV_MAX_PAYLOAD_SIZE)
+  {
+    NIMBLE_LOGW(LOG_TAG, "updateManufacturerData - Skipped: advertising packet has no room left for manufacturer data (device name/services too long)");
+    #if BLE_GAMEPAD_DEBUG == 1
+      if (Serial) Serial.println("[BLEGamepad][DEBUG] updateManufacturerData - Skipped: not enough room in advertising packet");
+    #endif
+    return;
+  }
+
+  if (pushLive)
+  {
+    advData.setManufacturerData(manufacturerData, sizeof(manufacturerData));
+    bool ok = this->pAdvertising->setAdvertisementData(advData);
+    _lastManufacturerDataPushMs = millis();
+    #if BLE_GAMEPAD_DEBUG == 1
+      if (Serial) Serial.printf("[BLEGamepad][DEBUG] updateManufacturerData - setAdvertisementData (live) result=%d payload=%s\n", ok, advData.toString().c_str());
+    #endif
+  }
+  else
+  {
+    bool ok = this->pAdvertising->setManufacturerData(manufacturerData, sizeof(manufacturerData));
+    #if BLE_GAMEPAD_DEBUG == 1
+      if (Serial) Serial.printf("[BLEGamepad][DEBUG] updateManufacturerData - setManufacturerData (staged) result=%d\n", ok);
+    #endif
+  }
 }
 
 #if BLE_GAMEPAD_DEBUG == 1
@@ -2149,7 +2393,13 @@ void BleGamepad::taskServer(void *pvParameter)
   pAdvertising->setAppearance(HID_GAMEPAD);
   pAdvertising->setName(BleGamepadInstance->deviceName);
   pAdvertising->addServiceUUID(BleGamepadInstance->hid->getHidService()->getUUID());
-  
+  BleGamepadInstance->pAdvertising = pAdvertising;
+
+  if (BleGamepadInstance->configuration.getEnableManufacturerData())
+  {
+    BleGamepadInstance->updateManufacturerData(false);
+  }
+
   if(BleGamepadInstance->delayAdvertising)
   {
     NIMBLE_LOGD(LOG_TAG, "Main NimBLE server advertising delayed (until Nordic UART Service added)");
@@ -2157,9 +2407,16 @@ void BleGamepad::taskServer(void *pvParameter)
   else
   {
     NIMBLE_LOGD(LOG_TAG, "Main NimBLE server advertising started!");
-    pAdvertising->start();
+    bool advStarted = pAdvertising->start();
+    #if BLE_GAMEPAD_DEBUG == 1
+      if (Serial)
+      {
+        Serial.printf("[BLEGamepad][DEBUG] taskServer - pAdvertising->start() result=%d isAdvertising=%d payload=%s\n",
+                      advStarted, pAdvertising->isAdvertising(), pAdvertising->getAdvertisementData().toString().c_str());
+      }
+    #endif
   }
-  
+
   BleGamepadInstance->hid->setBatteryLevel(BleGamepadInstance->batteryLevel);
 
   vTaskDelay(portMAX_DELAY); // delay(portMAX_DELAY);

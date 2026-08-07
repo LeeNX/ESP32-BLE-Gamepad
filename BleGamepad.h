@@ -18,12 +18,14 @@
 #define BLE_GAMEPAD_DEBUG 0
 #endif
 
+class NimBLEAdvertising;
+
 class BleGamepad
 {
   private:
     std::string deviceManufacturer;
     std::string deviceName;
-    uint8_t tempHidReportDescriptor[150];
+    uint8_t tempHidReportDescriptor[200];
     int hidReportDescriptorSize;
     uint8_t hidReportSize;
     uint8_t numOfButtonBytes;
@@ -58,13 +60,16 @@ class BleGamepad
     uint8_t _dischargingState;
     uint8_t _chargingState;
     uint8_t _powerLevel;
+    uint8_t _reportPowerState;
+    unsigned long _lastManufacturerDataPushMs;
     bool nusInitialized;
-    
+
     BleConnectionStatus *connectionStatus;
     BleOutputReceiver *outputReceiver;
     NimBLEServer *pServer;
+    NimBLEAdvertising *pAdvertising;
     BleNUS* nus;
-    
+
     NimBLEHIDDevice *hid;
     NimBLECharacteristic *inputGamepad;
     NimBLECharacteristic *outputGamepad;
@@ -75,6 +80,7 @@ class BleGamepad
     void rawAction(uint8_t msg[], char msgSize);
     static void taskServer(void *pvParameter);
     uint8_t specialButtonBitPosition(uint8_t specialButton);
+    void updateManufacturerData(bool pushLive);
 
   public:
     BleGamepadConfiguration configuration;
@@ -142,6 +148,7 @@ class BleGamepad
     void setDischargingState(uint8_t dischargingState);
     void setChargingState(uint8_t chargingState);
     void setPowerLevel(uint8_t powerLevel);
+    void setPowerState(uint8_t state);
     void setTXPowerLevel(int8_t level = 9);
     int8_t getTXPowerLevel();
     uint8_t batteryLevel;
@@ -156,6 +163,8 @@ class BleGamepad
     NimBLEConnInfo getPeerInfo();
     String getDeviceName();
     String getDeviceManufacturer();
+    String getAdvertisingDataString(); // Hex dump of the current advertising payload (staged or live), for diagnostics
+    bool isAdvertising();
     void setGyroscope(int16_t gX = 0, int16_t gY = 0, int16_t gZ = 0);
     void setAccelerometer(int16_t aX = 0, int16_t aY = 0, int16_t aZ = 0);
     void setMotionControls(int16_t gX = 0, int16_t gY = 0, int16_t gZ = 0, int16_t aX = 0, int16_t aY = 0, int16_t aZ = 0);
