@@ -1,17 +1,31 @@
 # Release process
 
-This fork publishes releases as git tags, GitHub Releases, and a PlatformIO
+Releases are published as git tags, GitHub Releases, and a PlatformIO
 Registry package. Everything after the tag push is automated by
-[`.github/workflows/release.yml`](.github/workflows/release.yml).
+[`.github/workflows/release.yml`](.github/workflows/release.yml), and the
+workflow is fork-safe: it behaves the same whether it runs in
+`lemmingDev/ESP32-BLE-Gamepad` or in any fork, with no fork-specific values
+committed to `library.json`.
 
-The PlatformIO package name for this fork is **`ESP32-BLE-Gamepad-LeeNX`**,
-not `ESP32-BLE-Gamepad` — that name is already registered on the PlatformIO
-Registry by the upstream author (`lemmingdev`), and publishing requires
-owning the package name.
+`library.json` is committed with the canonical upstream identity — package
+name `ESP32-BLE-Gamepad`, repository pointing at `lemmingDev`. Before
+publishing, the release workflow checks `github.repository_owner`:
 
-## One-time setup (repo owner)
+- **Running as `lemmingDev`**: publishes unchanged, as `ESP32-BLE-Gamepad`
+  (the package already registered on the PlatformIO Registry).
+- **Running as any other owner (a fork)**: a fork can't publish under a
+  package name it doesn't own, so the workflow publishes under
+  `ESP32-BLE-Gamepad-<owner>` instead (e.g. `ESP32-BLE-Gamepad-LeeNX`) and
+  points the manifest's `repository.url` at that fork — only in the
+  workflow's working copy for that run, not committed. This is why a PR
+  carrying these CI files back to upstream needs no editing: merged as-is,
+  it just publishes as the canonical package.
 
-The publish step needs a PlatformIO auth token stored as a repo secret:
+## One-time setup (per repository/fork)
+
+Each repository that wants `pio pkg publish` to actually run needs its own
+PlatformIO auth token — the token determines which account, and therefore
+which package namespace, it publishes to:
 
 1. Create a PlatformIO account (or use an existing one) at
    [platformio.org](https://platformio.org).
@@ -24,9 +38,8 @@ The publish step needs a PlatformIO auth token stored as a repo secret:
    ```
    (prompts for your current password to confirm the change).
 4. Generate a token with `pio account token`.
-5. In the `LeeNX/ESP32-BLE-Gamepad` GitHub repo, add the token as a secret
-   named `PLATFORMIO_AUTH_TOKEN` (Settings → Secrets and variables →
-   Actions).
+5. In that repository's GitHub settings, add the token as a secret named
+   `PLATFORMIO_AUTH_TOKEN` (Settings → Secrets and variables → Actions).
 
 Until this secret exists, releases still get tagged and get a GitHub
 Release, but the `pio pkg publish` step logs a warning and skips itself
@@ -59,8 +72,8 @@ Pushing the tag triggers the existing
 - Verifies `library.properties` / `library.json` versions match the tag
   (fails fast with a clear error if you forgot step 2).
 - Creates a GitHub Release for the tag with auto-generated notes.
-- Runs `pio pkg publish` to push the new version to the PlatformIO
-  Registry under `ESP32-BLE-Gamepad-LeeNX`.
+- Adapts the manifest for forks as described above, then runs
+  `pio pkg publish` to push the new version to the PlatformIO Registry.
 
 If the build matrix fails, no release or publish happens — fix the build
 and re-tag (delete and re-push the tag, or bump to the next patch version).

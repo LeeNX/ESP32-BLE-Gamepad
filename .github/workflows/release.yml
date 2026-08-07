@@ -70,6 +70,41 @@ jobs:
           python -m pip install --upgrade pip
           pip install platformio
 
+      - name: Adapt manifest for forks
+        env:
+          REPO_OWNER: ${{ github.repository_owner }}
+          REPO_URL: ${{ github.server_url }}/${{ github.repository }}.git
+        run: |
+          # library.json is committed with the canonical upstream identity
+          # (package name "ESP32-BLE-Gamepad", owned by lemmingdev on the
+          # PlatformIO registry). A fork can't publish under that name - it
+          # doesn't own it - so any repository other than upstream publishes
+          # under an owner-suffixed name instead, pointed at its own repo.
+          # This only edits the working copy for this run; the committed
+          # library.json is untouched, so a PR back to upstream carries no
+          # fork-specific values.
+          python3 - <<'PYEOF'
+          import json
+          import os
+          import re
+
+          CANONICAL_OWNER = "lemmingdev"
+
+          owner = os.environ["REPO_OWNER"]
+          if owner.lower() == CANONICAL_OWNER:
+              print(f"Canonical repository owner ({owner}) - publishing as the upstream 'ESP32-BLE-Gamepad' package.")
+          else:
+              suffix = re.sub(r"[^A-Za-z0-9-]", "", owner)
+              with open("library.json") as f:
+                  data = json.load(f)
+              data["name"] = f"ESP32-BLE-Gamepad-{suffix}"
+              data["repository"]["url"] = os.environ["REPO_URL"]
+              with open("library.json", "w") as f:
+                  json.dump(data, f, indent=2)
+                  f.write("\n")
+              print(f"Fork owner ({owner}) - publishing as '{data['name']}' instead of the upstream package name.")
+          PYEOF
+
       - name: Publish to PlatformIO registry
         env:
           PLATFORMIO_AUTH_TOKEN: ${{ secrets.PLATFORMIO_AUTH_TOKEN }}
