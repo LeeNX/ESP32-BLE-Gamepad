@@ -210,6 +210,12 @@
 #define POWER_STATE_CHARGING        3 // 0b11
 #define POWER_STATE_CRITICAL        3 // 0b11
 
+// Simplified power state, used by the optional HID report field and advertising manufacturer data
+#define GAMEPAD_POWER_STATE_UNKNOWN    0
+#define GAMEPAD_POWER_STATE_CHARGING   1
+#define GAMEPAD_POWER_STATE_ON_BATTERY 2
+#define GAMEPAD_POWER_STATE_FULL       3
+
 class BleGamepadConfiguration
 {
 private:
@@ -241,7 +247,12 @@ private:
     bool _enableNordicUARTService;
     uint16_t _outputReportLength;
     int8_t _transmitPowerLevel;
- 
+    bool _includeBatteryLevelInReport;
+    bool _includePowerStateInReport;
+    bool _enableManufacturerData;
+    uint16_t _manufacturerCompanyId;
+    uint32_t _manufacturerDataUpdateIntervalMs;
+
 
 public:
     BleGamepadConfiguration();
@@ -300,6 +311,11 @@ public:
     bool getEnableNordicUARTService();
     uint16_t getOutputReportLength();
     int8_t getTXPowerLevel();
+    bool getIncludeBatteryLevelInReport();
+    bool getIncludePowerStateInReport();
+    bool getEnableManufacturerData();
+    uint16_t getManufacturerCompanyId();
+    uint32_t getManufacturerDataUpdateInterval();
 
     void setControllerType(uint8_t controllerType);
     void setAutoReport(bool value);
@@ -350,6 +366,11 @@ public:
     void setEnableNordicUARTService(bool value);
     void setOutputReportLength(uint16_t value);
     void setTXPowerLevel(int8_t value);
+    void setIncludeBatteryLevelInReport(bool value);
+    void setIncludePowerStateInReport(bool value);
+    void setEnableManufacturerData(bool value);
+    void setManufacturerCompanyId(uint16_t value);
+    void setManufacturerDataUpdateInterval(uint32_t value);
 };
 
 #endif

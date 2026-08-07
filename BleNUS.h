@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #ifndef BleNUS_h
 #define BleNUS_h
 

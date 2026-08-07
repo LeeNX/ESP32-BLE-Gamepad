@@ -85,6 +85,12 @@ setBatteryPowerInformation KEYWORD2
 setDischargingState KEYWORD2
 setChargingState  KEYWORD2
 setPowerLevel KEYWORD2
+setPowerState KEYWORD2
+setIncludeBatteryLevelInReport	KEYWORD2
+setIncludePowerStateInReport	KEYWORD2
+setEnableManufacturerData	KEYWORD2
+setManufacturerCompanyId	KEYWORD2
+setManufacturerDataUpdateInterval	KEYWORD2
 pressSpecialButton  KEYWORD2
 releaseSpecialButton	KEYWORD2
 pressStart	KEYWORD2
@@ -173,6 +179,8 @@ enterPairingMode	KEYWORD2
 getPeerInfo	KEYWORD2
 getDeviceName	KEYWORD2
 getDeviceManufacturer	KEYWORD2
+getAdvertisingDataString	KEYWORD2
+isAdvertising	KEYWORD2
 getTXPowerLevel	KEYWORD2
 setTXPowerLevel	KEYWORD2
 setGyroscope	KEYWORD2
@@ -190,6 +198,11 @@ getNUS  KEYWORD2
 CONTROLLER_TYPE_JOYSTICK LITERAL1
 CONTROLLER_TYPE_GAMEPAD LITERAL1
 CONTROLLER_TYPE_MULTI_AXIS LITERAL1
+
+GAMEPAD_POWER_STATE_UNKNOWN LITERAL1
+GAMEPAD_POWER_STATE_CHARGING LITERAL1
+GAMEPAD_POWER_STATE_ON_BATTERY LITERAL1
+GAMEPAD_POWER_STATE_FULL LITERAL1
 
 BUTTON_1 LITERAL1
 BUTTON_2 LITERAL1
