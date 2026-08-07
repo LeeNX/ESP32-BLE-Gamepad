@@ -6,7 +6,7 @@ name: Report size deltas
     # A scheduled trigger (rather than workflow_run/pull_request) is what
     # gives this job write permissions to comment on PRs submitted from
     # forks - see https://github.com/arduino/report-size-deltas#usage.
-    - cron: "*/30 * * * *"
+    - cron: "0 * * * *"
   workflow_dispatch:
 
 permissions: {}

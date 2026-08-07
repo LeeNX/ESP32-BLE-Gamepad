@@ -15,9 +15,16 @@ The publish step needs a PlatformIO auth token stored as a repo secret:
 
 1. Create a PlatformIO account (or use an existing one) at
    [platformio.org](https://platformio.org).
-2. Locally: `pip install platformio && pio account login`, then generate a
-   token with `pio account token`.
-3. In the `LeeNX/ESP32-BLE-Gamepad` GitHub repo, add the token as a secret
+2. Locally: `pip install platformio && pio account login`.
+3. Make sure the account has a username set — a bare email/password
+   account can't publish. `pio pkg publish` fails with
+   `HTTPClientError: Please set a username for your account` until you run:
+   ```sh
+   pio account update --username <your-username>
+   ```
+   (prompts for your current password to confirm the change).
+4. Generate a token with `pio account token`.
+5. In the `LeeNX/ESP32-BLE-Gamepad` GitHub repo, add the token as a secret
    named `PLATFORMIO_AUTH_TOKEN` (Settings → Secrets and variables →
    Actions).
 
@@ -65,5 +72,5 @@ and re-tag (delete and re-push the tag, or bump to the next patch version).
 workflow, so a release is only ever created and published from a tag that
 actually compiles on every supported board. This mirrors the pattern
 already used by
-[`report-size.yml`](.github/workflows/report-size.yml) for decoupling
-follow-up reporting from the build.
+[`report-size-trend.yml`](.github/workflows/report-size-trend.yml) for
+decoupling follow-up reporting from the build.
