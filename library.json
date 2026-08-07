@@ -1,6 +1,6 @@
 {
   "name": "ESP32-BLE-Gamepad-LeeNX",
-  "version": "0.7.5",
+  "version": "0.7.6",
   "description": "Bluetooth LE Gamepad library for the ESP32. LeeNX fork of lemmingDev/ESP32-BLE-Gamepad.",
   "keywords": ["communication", "bluetooth", "ble", "gamepad", "esp32"],
   "repository": {
