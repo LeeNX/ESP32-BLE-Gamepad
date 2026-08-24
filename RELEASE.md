@@ -79,6 +79,16 @@ and creates annotated tag `v0.7.7` — all locally. Nothing is pushed unless
 you pass `--push` (or run the `git push` commands it prints at the end
 yourself); pass `--dry-run` first if you just want to see what it would do.
 
+The script doesn't assume a remote named `origin` — plenty of fork setups
+don't have one (e.g. `gh repo clone` leaves you with just the fork's own
+remote name). It resolves which remote to use, in order: `--remote NAME` /
+`RELEASE_REMOTE` env var if given, else the current branch's upstream
+tracking remote if it has one, else `origin` if that exists, else the sole
+remote if there's exactly one configured. If none of those resolve it
+(e.g. two remotes and no tracking branch set), it stops and asks you to
+say which one explicitly rather than guessing — guessing wrong here could
+mean pushing a release tag to the wrong repository.
+
 ### Release candidates
 
 A version with a semver pre-release suffix, e.g. `0.7.7-rc0`
