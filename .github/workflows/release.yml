@@ -47,6 +47,13 @@ jobs:
 
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
 
+          # A semver pre-release suffix (e.g. v0.7.7-rc0) marks the GitHub
+          # Release as a prerelease, so it doesn't show as "Latest release".
+          case "$tag_version" in
+            *-*) echo "prerelease=true" >> "$GITHUB_OUTPUT" ;;
+            *) echo "prerelease=false" >> "$GITHUB_OUTPUT" ;;
+          esac
+
       - name: Create GitHub release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -54,10 +61,16 @@ jobs:
           if gh release view "${{ steps.version.outputs.tag }}" --repo "${{ github.repository }}" >/dev/null 2>&1; then
             echo "Release ${{ steps.version.outputs.tag }} already exists, skipping creation."
           else
+            prerelease_flag=""
+            if [ "${{ steps.version.outputs.prerelease }}" = "true" ]; then
+              prerelease_flag="--prerelease"
+            fi
+
             gh release create "${{ steps.version.outputs.tag }}" \
               --repo "${{ github.repository }}" \
               --title "${{ steps.version.outputs.tag }}" \
-              --generate-notes
+              --generate-notes \
+              $prerelease_flag
           fi
 
       - name: Set up Python

@@ -62,22 +62,35 @@ package on the PlatformIO Registry.
 
 ## Cutting a release
 
-1. Decide the new version, e.g. `0.7.5` (semver: `MAJOR.MINOR.PATCH`).
-2. Bump the version in **both** manifest files — they must match the tag
-   exactly, or the release workflow will fail on purpose:
-   - [`library.properties`](library.properties): `version=0.7.5`
-   - [`library.json`](library.json): `"version": "0.7.5"`
-3. Commit that change on `master`:
-   ```sh
-   git add library.properties library.json
-   git commit -m "Bump version to 0.7.5"
-   git push
-   ```
-4. Tag the commit and push the tag:
-   ```sh
-   git tag v0.7.5
-   git push origin v0.7.5
-   ```
+Decide the new version (semver: `MAJOR.MINOR.PATCH`, e.g. `0.7.7`), then run
+[`scripts/release.sh`](scripts/release.sh):
+
+```sh
+scripts/release.sh 0.7.7
+# or: RELEASE_VERSION=0.7.7 scripts/release.sh
+```
+
+It refuses to run on a dirty working tree, bumps `version=` in
+[`library.properties`](library.properties) and `"version"` in
+[`library.json`](library.json) to match, commits `Bump version to 0.7.7`,
+and creates annotated tag `v0.7.7` — all locally. Nothing is pushed unless
+you pass `--push` (or run the `git push` commands it prints at the end
+yourself); pass `--dry-run` first if you just want to see what it would do.
+
+### Release candidates
+
+A version with a semver pre-release suffix, e.g. `0.7.7-rc0`
+(`scripts/release.sh 0.7.7-rc0`), is treated as a full release through the
+whole pipeline — same build matrix, same version-bumped manifests, same
+`pio pkg publish` — with one difference: `release.yml` detects the `-`
+suffix and creates the GitHub Release with `--prerelease`, so it doesn't
+show up as "Latest release". Everything else (PlatformIO publish, manifest
+bump) happens exactly as for a normal release, including the version
+number being permanently consumed on the PlatformIO Registry once
+published — there's no "undo" for an RC there, same as any other version.
+
+The two manifest files must match the tag exactly, or the release workflow
+fails on purpose — that's what the script keeps in sync for you.
 
 Pushing the tag triggers the existing
 [`platformio.yml`](.github/workflows/platformio.yml) build matrix
@@ -85,7 +98,7 @@ Pushing the tag triggers the existing
 `release.yml` runs automatically and:
 
 - Verifies `library.properties` / `library.json` versions match the tag
-  (fails fast with a clear error if you forgot step 2).
+  (fails fast with a clear error if they're out of sync).
 - Creates a GitHub Release for the tag with auto-generated notes.
 - Resolves the PlatformIO package identity as described above (canonical
   package upstream, opt-in `PLATFORMIO_PACKAGE_NAME`/`_OWNER` for forks, or
