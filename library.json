@@ -1,8 +1,14 @@
 {
   "name": "ESP32-BLE-Gamepad",
-  "version": "0.7.6",
+  "version": "0.7.7-rc0",
   "description": "Bluetooth LE Gamepad library for the ESP32.",
-  "keywords": ["communication", "bluetooth", "ble", "gamepad", "esp32"],
+  "keywords": [
+    "communication",
+    "bluetooth",
+    "ble",
+    "gamepad",
+    "esp32"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/lemmingDev/ESP32-BLE-Gamepad.git"
