@@ -15,8 +15,8 @@ publishing, the release workflow checks `github.repository_owner`:
   (the package already registered on the PlatformIO Registry).
 - **Running as any other owner (a fork)**: a fork can't publish under a
   package name/namespace it doesn't own, so publishing is **opt-in** —
-  disabled unless the fork has set both the `PLATFORMIO_PACKAGE_NAME` and
-  `PLATFORMIO_PACKAGE_OWNER` repo variables (see setup below). If they
+  disabled unless the fork has set both the `PLATFORMIO_PACKAGE_OWNER` and
+  `PLATFORMIO_PACKAGE_NAME` repo variables (see setup below). If they
   aren't set, `release.yml` logs a warning and skips the publish step
   entirely, rather than guessing a name. If they are set, the workflow
   patches the manifest's `name` and `repository.url` to match — only in
@@ -47,12 +47,14 @@ the repo variables and the auth token:
    named `PLATFORMIO_AUTH_TOKEN` (Settings → Secrets and variables →
    Actions → **Secrets**).
 5. Add two repo **variables** (same page, **Variables** tab instead of
-   Secrets):
+   Secrets), named to mirror the registry URL they end up forming —
+   `registry.platformio.org/libraries/<PLATFORMIO_PACKAGE_OWNER>/<PLATFORMIO_PACKAGE_NAME>`:
+   - `PLATFORMIO_PACKAGE_OWNER` — the PlatformIO account username from
+     step 3 that owns the package (used both to pass `--owner` to
+     `pio pkg publish` explicitly and to build the registry link in the
+     job summary).
    - `PLATFORMIO_PACKAGE_NAME` — the package name to publish, e.g.
      `ESP32-BLE-Gamepad-LeeNX`.
-   - `PLATFORMIO_PACKAGE_OWNER` — the PlatformIO account username from
-     step 3 that owns it (used both to pass `--owner` to `pio pkg publish`
-     explicitly and to build the registry link in the job summary).
 
 Until both variables are set, `release.yml` still tags and creates a
 GitHub Release as normal — it just skips the PlatformIO publish step with
@@ -101,7 +103,7 @@ Pushing the tag triggers the existing
   (fails fast with a clear error if they're out of sync).
 - Creates a GitHub Release for the tag with auto-generated notes.
 - Resolves the PlatformIO package identity as described above (canonical
-  package upstream, opt-in `PLATFORMIO_PACKAGE_NAME`/`_OWNER` for forks, or
+  package upstream, opt-in `PLATFORMIO_PACKAGE_OWNER`/`_NAME` for forks, or
   skip), then runs `pio pkg publish` and links the published package in
   the run's job summary.
 

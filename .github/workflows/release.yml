@@ -88,15 +88,15 @@ jobs:
         env:
           REPO_OWNER: ${{ github.repository_owner }}
           REPO_URL: ${{ github.server_url }}/${{ github.repository }}.git
-          PIO_PACKAGE_NAME: ${{ vars.PLATFORMIO_PACKAGE_NAME }}
           PIO_PACKAGE_OWNER: ${{ vars.PLATFORMIO_PACKAGE_OWNER }}
+          PIO_PACKAGE_NAME: ${{ vars.PLATFORMIO_PACKAGE_NAME }}
         run: |
           # library.json is committed with the canonical upstream identity
           # (package name "ESP32-BLE-Gamepad", owned by lemmingdev on the
           # PlatformIO registry). A fork can't publish under that name - it
           # doesn't own it - so publishing for any other repository owner is
-          # opt-in: it requires both the PLATFORMIO_PACKAGE_NAME and
-          # PLATFORMIO_PACKAGE_OWNER repo variables (Settings -> Secrets and
+          # opt-in: it requires both the PLATFORMIO_PACKAGE_OWNER and
+          # PLATFORMIO_PACKAGE_NAME repo variables (Settings -> Secrets and
           # variables -> Actions -> Variables) to be set, and is skipped
           # otherwise. This keeps a PR carrying these CI files back to
           # upstream mergeable as-is - it publishes as the canonical package
@@ -113,18 +113,18 @@ jobs:
           CANONICAL_PACKAGE = "ESP32-BLE-Gamepad"
 
           repo_owner = os.environ["REPO_OWNER"]
-          pio_name = os.environ.get("PIO_PACKAGE_NAME", "").strip()
           pio_owner = os.environ.get("PIO_PACKAGE_OWNER", "").strip()
+          pio_name = os.environ.get("PIO_PACKAGE_NAME", "").strip()
 
           if repo_owner.lower() == CANONICAL_OWNER:
               should_publish = True
-              package_name = CANONICAL_PACKAGE
               package_owner = CANONICAL_OWNER
+              package_name = CANONICAL_PACKAGE
               print(f"Canonical repository owner ({repo_owner}) - publishing as the upstream '{CANONICAL_PACKAGE}' package.")
-          elif pio_name and pio_owner:
+          elif pio_owner and pio_name:
               should_publish = True
-              package_name = pio_name
               package_owner = pio_owner
+              package_name = pio_name
               with open("library.json") as f:
                   data = json.load(f)
               data["name"] = package_name
@@ -132,19 +132,19 @@ jobs:
               with open("library.json", "w") as f:
                   json.dump(data, f, indent=2)
                   f.write("\n")
-              print(f"Fork with PLATFORMIO_PACKAGE_NAME/PLATFORMIO_PACKAGE_OWNER set - publishing as '{package_owner}/{package_name}'.")
+              print(f"Fork with PLATFORMIO_PACKAGE_OWNER/PLATFORMIO_PACKAGE_NAME set - publishing as '{package_owner}/{package_name}'.")
           else:
               should_publish = False
-              package_name = ""
               package_owner = ""
-              print("::warning::Fork repository with no PLATFORMIO_PACKAGE_NAME/PLATFORMIO_PACKAGE_OWNER repo variables set - skipping PlatformIO publish. See RELEASE.md.")
+              package_name = ""
+              print("::warning::Fork repository with no PLATFORMIO_PACKAGE_OWNER/PLATFORMIO_PACKAGE_NAME repo variables set - skipping PlatformIO publish. See RELEASE.md.")
 
           package_url = f"https://registry.platformio.org/libraries/{package_owner}/{package_name}" if should_publish else ""
 
           with open(os.environ["GITHUB_OUTPUT"], "a") as f:
               f.write(f"should_publish={'true' if should_publish else 'false'}\n")
-              f.write(f"package_name={package_name}\n")
               f.write(f"package_owner={package_owner}\n")
+              f.write(f"package_name={package_name}\n")
               f.write(f"package_url={package_url}\n")
           PYEOF
 
