@@ -11,21 +11,27 @@ committed to `library.json`.
 name `ESP32-BLE-Gamepad`, repository pointing at `lemmingDev`. Before
 publishing, the release workflow checks `github.repository_owner`:
 
-- **Running as `lemmingDev`**: publishes unchanged, as `ESP32-BLE-Gamepad`
+- **Running as `lemmingDev`**: publishes unchanged, as `lemmingdev/ESP32-BLE-Gamepad`
   (the package already registered on the PlatformIO Registry).
 - **Running as any other owner (a fork)**: a fork can't publish under a
-  package name it doesn't own, so the workflow publishes under
-  `ESP32-BLE-Gamepad-<owner>` instead (e.g. `ESP32-BLE-Gamepad-LeeNX`) and
-  points the manifest's `repository.url` at that fork — only in the
-  workflow's working copy for that run, not committed. This is why a PR
-  carrying these CI files back to upstream needs no editing: merged as-is,
-  it just publishes as the canonical package.
+  package name/namespace it doesn't own, so publishing is **opt-in** —
+  disabled unless the fork has set both the `PLATFORMIO_PACKAGE_NAME` and
+  `PLATFORMIO_PACKAGE_OWNER` repo variables (see setup below). If they
+  aren't set, `release.yml` logs a warning and skips the publish step
+  entirely, rather than guessing a name. If they are set, the workflow
+  patches the manifest's `name` and `repository.url` to match — only in
+  the workflow's working copy for that run, not committed. This is why a
+  PR carrying these CI files back to upstream needs no editing: merged
+  as-is, it just publishes as the canonical package.
 
 ## One-time setup (per repository/fork)
 
-Each repository that wants `pio pkg publish` to actually run needs its own
-PlatformIO auth token — the token determines which account, and therefore
-which package namespace, it publishes to:
+**Upstream (`lemmingDev/ESP32-BLE-Gamepad`)** only needs the auth token
+(step 4 below) — the package name/owner are hardcoded to the canonical
+values.
+
+**Any fork** that wants to publish its own PlatformIO package needs both
+the repo variables and the auth token:
 
 1. Create a PlatformIO account (or use an existing one) at
    [platformio.org](https://platformio.org).
@@ -37,13 +43,22 @@ which package namespace, it publishes to:
    pio account update --username <your-username>
    ```
    (prompts for your current password to confirm the change).
-4. Generate a token with `pio account token`.
-5. In that repository's GitHub settings, add the token as a secret named
-   `PLATFORMIO_AUTH_TOKEN` (Settings → Secrets and variables → Actions).
+4. Generate a token with `pio account token`, and add it as a repo secret
+   named `PLATFORMIO_AUTH_TOKEN` (Settings → Secrets and variables →
+   Actions → **Secrets**).
+5. Add two repo **variables** (same page, **Variables** tab instead of
+   Secrets):
+   - `PLATFORMIO_PACKAGE_NAME` — the package name to publish, e.g.
+     `ESP32-BLE-Gamepad-LeeNX`.
+   - `PLATFORMIO_PACKAGE_OWNER` — the PlatformIO account username from
+     step 3 that owns it (used both to pass `--owner` to `pio pkg publish`
+     explicitly and to build the registry link in the job summary).
 
-Until this secret exists, releases still get tagged and get a GitHub
-Release, but the `pio pkg publish` step logs a warning and skips itself
-instead of failing.
+Until both variables are set, `release.yml` still tags and creates a
+GitHub Release as normal — it just skips the PlatformIO publish step with
+a warning instead of failing or guessing a name. Once a real publish
+succeeds, the job summary for that run includes a direct link to the
+package on the PlatformIO Registry.
 
 ## Cutting a release
 
@@ -72,8 +87,10 @@ Pushing the tag triggers the existing
 - Verifies `library.properties` / `library.json` versions match the tag
   (fails fast with a clear error if you forgot step 2).
 - Creates a GitHub Release for the tag with auto-generated notes.
-- Adapts the manifest for forks as described above, then runs
-  `pio pkg publish` to push the new version to the PlatformIO Registry.
+- Resolves the PlatformIO package identity as described above (canonical
+  package upstream, opt-in `PLATFORMIO_PACKAGE_NAME`/`_OWNER` for forks, or
+  skip), then runs `pio pkg publish` and links the published package in
+  the run's job summary.
 
 If the build matrix fails, no release or publish happens — fix the build
 and re-tag (delete and re-push the tag, or bump to the next patch version).
