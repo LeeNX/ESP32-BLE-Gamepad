@@ -138,7 +138,7 @@ bool BleGamepadConfiguration::getEnableFeatureReport(){ return _enableFeatureRep
 bool BleGamepadConfiguration::getEnableNordicUARTService(){ return _enableNordicUARTService; }
 uint16_t BleGamepadConfiguration::getOutputReportLength(){ return _outputReportLength; }
 uint16_t BleGamepadConfiguration::getFeatureReportLength(){ return _featureReportLength; }
-int8_t BleGamepadConfiguration::getTXPowerLevel(){ return _transmitPowerLevel; }	// Returns the power level that was set as the server started
+int8_t BleGamepadConfiguration::getTXPowerLevel(){ return _transmitPowerLevel; } // Returns the power level that was set as the server started
 
 void BleGamepadConfiguration::setWhichSpecialButtons(bool start, bool select, bool menu, bool home, bool back, bool volumeInc, bool volumeDec, bool volumeMute)
 {

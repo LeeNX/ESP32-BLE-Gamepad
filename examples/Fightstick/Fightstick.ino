@@ -45,7 +45,7 @@ void setup()
 
     BleGamepadConfiguration bleGamepadConfig;
     bleGamepadConfig.setAutoReport(false);
-    bleGamepadConfig.setWhichAxes(0, 0, 0, 0, 0, 0, 0, 0);	// Disable all axes
+    bleGamepadConfig.setWhichAxes(0, 0, 0, 0, 0, 0, 0, 0); // Disable all axes
     bleGamepadConfig.setButtonCount(numOfButtons);
     bleGamepadConfig.setHatSwitchCount(numOfHats);
     bleGamepad.begin(&bleGamepadConfig);
@@ -133,10 +133,10 @@ void loop()
         {
             memcpy((void *)previousButtonStates, (void *)currentButtonStates, sizeof(currentButtonStates));
             memcpy((void *)previousHatStates, (void *)currentHatStates, sizeof(currentHatStates));
-            bleGamepad.sendReport();	// Send a report if any of the button states or hat directions have changed
+            bleGamepad.sendReport(); // Send a report if any of the button states or hat directions have changed
         }
 
-        delay(10);	// Reduce for less latency
+        delay(10); // Reduce for less latency
     }
 }
 

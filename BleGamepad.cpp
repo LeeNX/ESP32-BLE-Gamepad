@@ -365,9 +365,9 @@ void BleGamepad::begin(BleGamepadConfiguration *config)
     tempHidReportDescriptor[hidReportDescriptorSize++] = 0x26;
     tempHidReportDescriptor[hidReportDescriptorSize++] = lowByte(configuration.getAxesMax());
     tempHidReportDescriptor[hidReportDescriptorSize++] = highByte(configuration.getAxesMax());
-    //tempHidReportDescriptor[hidReportDescriptorSize++] = 0xFF;	// Use these two lines for 255 max
+    //tempHidReportDescriptor[hidReportDescriptorSize++] = 0xFF; // Use these two lines for 255 max
     //tempHidReportDescriptor[hidReportDescriptorSize++] = 0x00;
-    //tempHidReportDescriptor[hidReportDescriptorSize++] = 0xFF;	// Use these two lines for +32767 max
+    //tempHidReportDescriptor[hidReportDescriptorSize++] = 0xFF; // Use these two lines for +32767 max
     //tempHidReportDescriptor[hidReportDescriptorSize++] = 0x7F;
 
     // REPORT_SIZE (16)
@@ -489,18 +489,18 @@ void BleGamepad::begin(BleGamepadConfiguration *config)
     tempHidReportDescriptor[hidReportDescriptorSize++] = 0x16;
     tempHidReportDescriptor[hidReportDescriptorSize++] = lowByte(configuration.getSimulationMin());
     tempHidReportDescriptor[hidReportDescriptorSize++] = highByte(configuration.getSimulationMin());
-    //tempHidReportDescriptor[hidReportDescriptorSize++] = 0x00;	    // Use these two lines for 0 min
+    //tempHidReportDescriptor[hidReportDescriptorSize++] = 0x00;     // Use these two lines for 0 min
     //tempHidReportDescriptor[hidReportDescriptorSize++] = 0x00;
-    //tempHidReportDescriptor[hidReportDescriptorSize++] = 0x01;	    // Use these two lines for -32767 min
+    //tempHidReportDescriptor[hidReportDescriptorSize++] = 0x01;     // Use these two lines for -32767 min
     //tempHidReportDescriptor[hidReportDescriptorSize++] = 0x80;
 
     // LOGICAL_MAXIMUM (+32767)
     tempHidReportDescriptor[hidReportDescriptorSize++] = 0x26;
     tempHidReportDescriptor[hidReportDescriptorSize++] = lowByte(configuration.getSimulationMax());
     tempHidReportDescriptor[hidReportDescriptorSize++] = highByte(configuration.getSimulationMax());
-    //tempHidReportDescriptor[hidReportDescriptorSize++] = 0xFF;	    // Use these two lines for 255 max
+    //tempHidReportDescriptor[hidReportDescriptorSize++] = 0xFF;     // Use these two lines for 255 max
     //tempHidReportDescriptor[hidReportDescriptorSize++] = 0x00;
-    //tempHidReportDescriptor[hidReportDescriptorSize++] = 0xFF;	    // Use these two lines for +32767 max
+    //tempHidReportDescriptor[hidReportDescriptorSize++] = 0xFF;     // Use these two lines for +32767 max
     //tempHidReportDescriptor[hidReportDescriptorSize++] = 0x7F;
 
     // REPORT_SIZE (16)
@@ -587,18 +587,18 @@ void BleGamepad::begin(BleGamepadConfiguration *config)
     tempHidReportDescriptor[hidReportDescriptorSize++] = 0x16;
     tempHidReportDescriptor[hidReportDescriptorSize++] = lowByte(configuration.getMotionMin());
     tempHidReportDescriptor[hidReportDescriptorSize++] = highByte(configuration.getMotionMin());
-    //tempHidReportDescriptor[hidReportDescriptorSize++] = 0x00;	    // Use these two lines for 0 min
+    //tempHidReportDescriptor[hidReportDescriptorSize++] = 0x00;     // Use these two lines for 0 min
     //tempHidReportDescriptor[hidReportDescriptorSize++] = 0x00;
-    //tempHidReportDescriptor[hidReportDescriptorSize++] = 0x01;	    // Use these two lines for -32767 min
+    //tempHidReportDescriptor[hidReportDescriptorSize++] = 0x01;     // Use these two lines for -32767 min
     //tempHidReportDescriptor[hidReportDescriptorSize++] = 0x80;
 
     // LOGICAL_MAXIMUM (+32767)
     tempHidReportDescriptor[hidReportDescriptorSize++] = 0x26;
     tempHidReportDescriptor[hidReportDescriptorSize++] = lowByte(configuration.getMotionMax());
     tempHidReportDescriptor[hidReportDescriptorSize++] = highByte(configuration.getMotionMax());
-    //tempHidReportDescriptor[hidReportDescriptorSize++] = 0xFF;	    // Use these two lines for 255 max
+    //tempHidReportDescriptor[hidReportDescriptorSize++] = 0xFF;     // Use these two lines for 255 max
     //tempHidReportDescriptor[hidReportDescriptorSize++] = 0x00;
-    //tempHidReportDescriptor[hidReportDescriptorSize++] = 0xFF;	    // Use these two lines for +32767 max
+    //tempHidReportDescriptor[hidReportDescriptorSize++] = 0xFF;     // Use these two lines for +32767 max
     //tempHidReportDescriptor[hidReportDescriptorSize++] = 0x7F;
 
     // REPORT_SIZE (16)
@@ -645,18 +645,18 @@ void BleGamepad::begin(BleGamepadConfiguration *config)
     tempHidReportDescriptor[hidReportDescriptorSize++] = 0x16;
     tempHidReportDescriptor[hidReportDescriptorSize++] = lowByte(configuration.getMotionMin());
     tempHidReportDescriptor[hidReportDescriptorSize++] = highByte(configuration.getMotionMin());
-    //tempHidReportDescriptor[hidReportDescriptorSize++] = 0x00;	    // Use these two lines for 0 min
+    //tempHidReportDescriptor[hidReportDescriptorSize++] = 0x00;     // Use these two lines for 0 min
     //tempHidReportDescriptor[hidReportDescriptorSize++] = 0x00;
-    //tempHidReportDescriptor[hidReportDescriptorSize++] = 0x01;	    // Use these two lines for -32767 min
+    //tempHidReportDescriptor[hidReportDescriptorSize++] = 0x01;     // Use these two lines for -32767 min
     //tempHidReportDescriptor[hidReportDescriptorSize++] = 0x80;
 
     // LOGICAL_MAXIMUM (+32767)
     tempHidReportDescriptor[hidReportDescriptorSize++] = 0x26;
     tempHidReportDescriptor[hidReportDescriptorSize++] = lowByte(configuration.getMotionMax());
     tempHidReportDescriptor[hidReportDescriptorSize++] = highByte(configuration.getMotionMax());
-    //tempHidReportDescriptor[hidReportDescriptorSize++] = 0xFF;	    // Use these two lines for 255 max
+    //tempHidReportDescriptor[hidReportDescriptorSize++] = 0xFF;     // Use these two lines for 255 max
     //tempHidReportDescriptor[hidReportDescriptorSize++] = 0x00;
-    //tempHidReportDescriptor[hidReportDescriptorSize++] = 0xFF;	    // Use these two lines for +32767 max
+    //tempHidReportDescriptor[hidReportDescriptorSize++] = 0xFF;     // Use these two lines for +32767 max
     //tempHidReportDescriptor[hidReportDescriptorSize++] = 0x7F;
 
     // REPORT_SIZE (16)
@@ -1782,7 +1782,7 @@ bool BleGamepad::deleteAllBonds(bool resetBoard)
     ESP.restart();
   }
 
-  return success;	// Returns false if all bonds are not deleted
+  return success; // Returns false if all bonds are not deleted
 }
 
 bool BleGamepad::deleteBond(bool resetBoard)
@@ -1807,7 +1807,7 @@ bool BleGamepad::deleteBond(bool resetBoard)
       ESP.restart();
     }
   }
-  return success;	// Returns false if current bond is not deleted
+  return success; // Returns false if current bond is not deleted
 }
 
 bool BleGamepad::enterPairingMode()
@@ -1837,7 +1837,7 @@ bool BleGamepad::enterPairingMode()
     NIMBLE_LOGD(LOG_TAG, "enterPairingMode - Advertising for clients...");
     while (connectedToOldDevice)
     {
-      delay(10);	// Needs a delay to work - do not remove!
+      delay(10); // Needs a delay to work - do not remove!
 
       if (this->isConnected())
       {

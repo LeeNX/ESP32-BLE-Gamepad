@@ -79,6 +79,6 @@ void loop()
             bleGamepad.sendReport();
         }
 
-        // delay(20);	// (Un)comment to remove/add delay between loops
+        // delay(20); // (Un)comment to remove/add delay between loops
     }
 }
