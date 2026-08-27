@@ -81,6 +81,10 @@ class BleGamepad
     void rawAction(uint8_t msg[], char msgSize);
     static void taskServer(void *pvParameter);
     uint8_t specialButtonBitPosition(uint8_t specialButton);
+    // Returns true if b is a usable button number (1..128). When
+    // BLE_GAMEPAD_DEBUG is on it also warns if b is past the configured
+    // button count, where the press would never reach the host.
+    bool checkButtonNumber(uint8_t b, const char *action);
 
   public:
     BleGamepadConfiguration configuration;

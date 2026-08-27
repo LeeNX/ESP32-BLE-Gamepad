@@ -1014,7 +1014,10 @@ void BleGamepad::sendReport(void)
     uint8_t m[hidReportSize];
 
     memset(&m, 0, sizeof(m));
-    memcpy(&m, &_buttons, sizeof(_buttons));
+    // Only the button bytes that are actually part of this report. _buttons is a
+    // fixed 16-byte array (128-button max); copying all of it overflows m when
+    // the configured report is smaller than 16 bytes (few buttons, few axes).
+    memcpy(&m, &_buttons, numOfButtonBytes);
 
     currentReportIndex += numOfButtonBytes;
 
@@ -1135,8 +1138,36 @@ void BleGamepad::sendReport(void)
   }
 }
 
+bool BleGamepad::checkButtonNumber(uint8_t b, const char *action)
+{
+  (void)action; // only referenced when BLE_GAMEPAD_DEBUG is on
+
+  if (b < 1 || b > 128)
+  {
+    #if BLE_GAMEPAD_DEBUG == 1
+      Serial.printf("[BLEGamepad][ERROR] %s(%u) ignored - button numbers are 1..128\n", action, b);
+    #endif
+    return false;
+  }
+
+  #if BLE_GAMEPAD_DEBUG == 1
+    if (b > configuration.getButtonCount())
+    {
+      Serial.printf("[BLEGamepad][WARN] %s(%u) - only %u button(s) configured; this press won't reach the host\n",
+                    action, b, (unsigned)configuration.getButtonCount());
+    }
+  #endif
+
+  return true;
+}
+
 void BleGamepad::press(uint8_t b)
 {
+  if (!checkButtonNumber(b, "press"))
+  {
+    return;
+  }
+
   uint8_t index = (b - 1) / 8;
   uint8_t bit = (b - 1) % 8;
   uint8_t bitmask = (1 << bit);
@@ -1156,6 +1187,11 @@ void BleGamepad::press(uint8_t b)
 
 void BleGamepad::release(uint8_t b)
 {
+  if (!checkButtonNumber(b, "release"))
+  {
+    return;
+  }
+
   uint8_t index = (b - 1) / 8;
   uint8_t bit = (b - 1) % 8;
   uint8_t bitmask = (1 << bit);
@@ -1683,6 +1719,11 @@ void BleGamepad::setSteering(int16_t steering)
 
 bool BleGamepad::isPressed(uint8_t b)
 {
+  if (b < 1 || b > 128)
+  {
+    return false;
+  }
+
   uint8_t index = (b - 1) / 8;
   uint8_t bit = (b - 1) % 8;
   uint8_t bitmask = (1 << bit);
