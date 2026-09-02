@@ -85,6 +85,55 @@ Setup:
 | tester | `tailscale up` (tagged for the ACL); CI public key in `~/.ssh/authorized_keys`; `tester/bootstrap-host.sh` installs Tailscale |
 | this repo secret | `HIL_DISPATCH_TOKEN` — PAT for the rig repo with **Contents: write** (POST `repository_dispatch`) + **Actions: read** (poll the run). Classic PAT: `repo` scope |
 | rig repo default branch | `hil.yml` must be on it — `repository_dispatch` only runs the workflow file version on the default branch |
+| this repo variables (optional) | `HIL_RIG_REF` — a rig tag; setting it makes `release.yml` attach the firmware set (below). `HIL_RIG_REPO` — the rig repo, default `LeeNX/ESP32-BLE-Gamepad-HIL` |
+
+### Firmware artifacts on releases
+
+When `HIL_RIG_REF` is set, `release.yml` adds a `hil-firmware` job: it checks out
+the rig at that ref, builds the `hil_runner` firmware for every board × profile
+against the tag, and attaches `esp32-ble-gamepad-hil-firmware-<tag>.zip` (+
+`.sha256`) to the GitHub Release. The zip holds the flashable `.bin` sets +
+`manifest.json` per bundle, the golden HID descriptors, `INDEX.json` (library +
+rig commit), and `REPRODUCE.md`.
+
+This lets anyone reproduce a HIL run with **no PlatformIO**: unzip, flash a
+bundle with `esptool` (or the rig's `tester/flash.py`), and run the rig's pytest
+suite against it. The job needs no secrets — the rig is a public checkout,
+building is just PlatformIO, and the upload uses `GITHUB_TOKEN`.
+
+## Other forks and upstream
+
+The rig and its Tailscale / tester secrets live in
+`LeeNX/ESP32-BLE-Gamepad-HIL`. A fork in another namespace (e.g. upstream
+`lemmingDev/ESP32-BLE-Gamepad`) has three options, cheapest first:
+
+**1. On demand, no setup.** The rig's `hil.yml` takes `lib_repo` + `lib_ref`
+inputs, so from the rig repo's Actions tab → **HIL** → *Run workflow*:
+
+- `lib_repo` = `https://github.com/<owner>/ESP32-BLE-Gamepad.git`, `lib_ref` =
+  a branch / tag / SHA
+- for a contributor's PR: `lib_repo` = their fork URL, `lib_ref` = their branch
+  (not `refs/pull/N/head` — the builder does `git clone --branch`)
+
+The rig clones that ref, builds `hil_runner` against it, and runs the full
+suite. Works for any public ref with zero changes to the target repo.
+
+**2. Adopt `hil.yml`, pointed at the LeeNX rig.** Merge this workflow, widen its
+`if:` guard to include the fork's `github.repository`, and add
+`HIL_DISPATCH_TOKEN` — a fine-grained PAT scoped to `LeeNX/ESP32-BLE-Gamepad-HIL`
+only (Contents: write + Actions: read), minted by someone with write on the rig.
+Cross-org, so the rig owner must accept the fork's CI driving their hardware;
+the `concurrency` groups on both sides plus the rig's single physical tester
+keep runs from colliding. Fork PRs still can't run automatically (no secrets on
+fork PRs) — a maintainer dispatches those by hand per option 1.
+
+**3. Run an independent rig.** Fork `ESP32-BLE-Gamepad-HIL`, attach a
+Raspberry Pi + ESP32(s) + BLE adapter on a powered hub, run
+`tester/bootstrap-host.sh` → `bootstrap.sh` → `tailscale up`, set the five rig
+secrets + the tailnet ACL, and set the fork's repo variable
+`HIL_RIG_ENABLED=true`. Then this repo's `HIL_DISPATCH_TOKEN` and
+`HIL_RIG_REPO` / `HIL_RIG_REF` point at that fork. Fully self-contained — the
+rig is already parameterised for it (`LIB_REPO` / `LIB_REF`, `HIL_TESTER_*`).
 
 ## What it covers
 
