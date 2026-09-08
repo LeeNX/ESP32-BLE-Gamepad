@@ -50,13 +50,14 @@ scripts/hil.sh --profiles default -- -k buttons                   # args after -
 1. writes a temporary `hil_config.local.toml` in the rig checkout pointing the
    builder at **this working tree** (uncommitted changes included) and at the tester;
 2. builds the `hil_runner` firmware bundles here;
-3. rsyncs the harness code **and** the bundles to the tester (its real
-   serial-port config is preserved);
-4. ssh-runs `tester/test-all.sh` — which takes the **rig lock** (one physical
-   rig; blocks until any CI or other local run releases it), then for each
-   bundle: esptool flash, re-pair on any HID descriptor change, pytest, the
-   `--bench` sweep, one retry on failure. `--by-board` runs the boards as
-   parallel lanes (functional only — the latency sweep stays sequential);
+3. rsyncs the harness code to the tester and the bundles to a **staging** dir
+   (its real serial-port config is preserved);
+4. ssh-runs the tester: take the **rig lock** (one physical rig; blocks until any
+   CI or other local run releases it), swap the staged bundles into place under
+   it, then `tester/test-all.sh` — for each bundle: esptool flash, re-pair on any
+   HID descriptor change, pytest, the `--bench` sweep, one retry on failure.
+   `--by-board` runs the boards as parallel lanes (functional only — the latency
+   sweep stays sequential);
 5. pulls `results/` back into `./hil-results/` (gitignored) and regenerates the
    distilled table + SVG charts.
 

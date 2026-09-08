@@ -90,25 +90,35 @@ rm -rf "$HIL_REPO/bundles"
 
 # --- 3. sync harness code + bundles to the Pi ----------------------------
 # The Pi keeps its own hil_config.local.toml (real serial ports) -- never touch it.
+# Bundles go to a *staging* dir; test-all.sh swaps it into ~/hil-bundles under
+# the rig lock. A plain `rsync --delete` to ~/hil-bundles races a concurrent CI
+# run doing the same before either holds the lock.
 echo "== rsync harness + bundles -> $PI"
 rsync -a --delete -e "${RSYNC_E[*]}" \
   --exclude '.git' --exclude '.pio' --exclude 'bundles' --exclude 'results' \
   --exclude 'hil_config.local.toml' --exclude '__pycache__' --exclude '*.pyc' \
   "$HIL_REPO"/ "$PI:$REMOTE_DIR/"
-rsync -a --delete -e "${RSYNC_E[*]}" "$HIL_REPO"/bundles/ "$PI:hil-bundles/"
+rsync -a --delete -e "${RSYNC_E[*]}" "$HIL_REPO"/bundles/ "$PI:hil-bundles.next/"
 
 # --- 4. flash + test each bundle on the Pi ------------------------------
-# tester/test-all.sh loops ~/hil-bundles, retries a bundle once, and takes the
-# rig lock (blocks until any CI / other local run releases it). Extra args
-# (--bench / --by-board / anything after --) pass straight through.
+# Take the rig lock, swap the staged bundles into ~/hil-bundles under it, then
+# tester/test-all.sh (re-entrant on HIL_RIG_LOCK_HELD) loops them, one retry
+# each. Extra args (--bench / --by-board / anything after --) pass through.
 rc=0
 "${SSH[@]}" "$PI" "bash -s --" "$REMOTE_DIR" "${TESTALL_ARGS[@]}" <<'REMOTE' || rc=$?
 set -e
 REMOTE_DIR="$1"; shift
 cd ~/"$REMOTE_DIR"
 rm -rf results && mkdir results
+CACHE="${XDG_CACHE_HOME:-$HOME/.cache}/esp32-hil"; mkdir -p "$CACHE"
+exec 9>"$CACHE/rig.lock"
+flock -w 2700 9 || { echo "HIL rig is busy:"; cat "$CACHE/rig-status.json" 2>/dev/null; exit 75; }
+[ -d "$HOME/hil-bundles.next" ] && { rm -rf "$HOME/hil-bundles"; mv "$HOME/hil-bundles.next" "$HOME/hil-bundles"; }
+export HIL_RIG_LOCK_HELD=$$ HIL_RUN_PID=$$ HIL_RUN_WHO="${USER}@$(hostname) scripts/hil.sh"
+tester/rig-lock.sh --status-write busy 2>/dev/null || true
 trc=0
 ./tester/test-all.sh "$@" || trc=$?
+tester/rig-lock.sh --status-write idle "$trc" 2>/dev/null || true
 echo; echo '########## verdicts'; cat results/run-verdicts.md 2>/dev/null || true
 exit $trc
 REMOTE
