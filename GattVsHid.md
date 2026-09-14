@@ -210,6 +210,23 @@ free-form bytes, no Report Descriptor, no Report ID framing.
   separate GATT connection to this device alongside the HID one, which most
   game engines have no support for.
 
+### D. Firmware updates (`BleOTA`)
+
+`beginOTA()` opens a third, independent GATT service — like NUS, no HID
+semantics at all, but its job is narrow and one-shot: accept a new firmware
+image over BLE, write it into the free OTA app slot, and reboot into it.
+Unlike NUS, its Control/Data characteristics require an encrypted, bonded
+link (`WRITE_ENC`) — OTA write access means "can brick or reflash the
+device," so it doesn't stay open the way NUS does. See
+[BleOTA.md](BleOTA.md) for the full protocol, the rollback state machine
+(`BleOTARollback`), and the partition layout (`factory` + `ota_0` + `ota_1`)
+this depends on.
+
+- Reachable from: a browser via the Web Bluetooth API (`tools/ota-web/`),
+  or any general-purpose GATT client willing to speak the protocol and
+  complete BLE bonding first.
+- Not reachable from: SDL/`hidapi`/OS joystick APIs, same reasoning as NUS.
+
 ### Picking one
 
 If you want an existing SDL3 game to recognize this device natively —
@@ -227,6 +244,11 @@ If it's configuration/telemetry meant for a **separate companion app**
 synchronized with game input timing — NUS (path C) is simpler, since it has
 no report-length/ID constraints and doesn't require touching the HID Report
 Descriptor at all, and it can run alongside either A or B.
+
+If it's firmware delivery, use OTA (path D) — it needs its own partition
+table (`board_build.partitions`, see `examples/OTAUpdate`), so it's opt-in
+per-sketch rather than something every user of the library gets by default.
+It can run alongside any of A/B/C.
 
 ## Architecture summary
 
@@ -253,6 +275,14 @@ Game / App (SDL3, SInput hint on)
      v
  NUS Service (custom UUID)  <-------------  BLE  <-----  ESP32 (BleNUS)
  free-form bytes, no HID framing -- can run alongside either option above
+
+
+ WebBLE OTA client (tools/ota-web/)
+     |
+     |  Web Bluetooth API, bonded + encrypted writes
+     v
+ OTA Service (custom UUID)  <-------------  BLE  <-----  ESP32 (BleOTA)
+ firmware image -> free ota_0/ota_1 slot; BleOTARollback confirms/rolls back
 ```
 
 The top path is what an SInput-aware game already reaches without any

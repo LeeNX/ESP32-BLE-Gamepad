@@ -14,6 +14,8 @@
 #include "BleFeatureReport.h"
 #include "BleSInput.h"
 #include "BleNUS.h"
+#include "BleOTA.h"
+#include "BleOTARollback.h"
 
 // Debug enabled, disabled by default
 #ifndef BLE_GAMEPAD_DEBUG
@@ -78,13 +80,15 @@ class BleGamepad
     uint8_t _chargingState;
     uint8_t _powerLevel;
     bool nusInitialized;
-    
+    bool otaInitialized;
+
     BleConnectionStatus *connectionStatus;
     BleOutputReceiver *outputReceiver;
     BleFeatureReceiver *featureReceiver;
     BleSInputReceiver *sInputReceiver;
     NimBLEServer *pServer;
     BleNUS* nus;
+    BleOTA* ota;
 
     NimBLEHIDDevice *hid;
     NimBLECharacteristic *inputGamepad;
@@ -205,6 +209,8 @@ class BleGamepad
     void sendDataOverNUS(const uint8_t* data, size_t length);
     void setNUSDataReceivedCallback(void (*callback)(const uint8_t* data, size_t length));
     BleNUS* getNUS();
+    void beginOTA();
+    BleOTA* getOTA();
 
   protected:
     virtual void onStarted(NimBLEServer *pServer) {};

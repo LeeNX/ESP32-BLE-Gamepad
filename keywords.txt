@@ -6,6 +6,8 @@
 
 BleGamepad  KEYWORD1
 BleGamepadConfiguration KEYWORD1
+BleOTA	KEYWORD1
+BleOTARollback	KEYWORD1
 
 #######################################
 # Methods and Functions
@@ -186,6 +188,14 @@ beginNUS  KEYWORD2
 sendDataOverNUS KEYWORD2
 setNUSDataReceivedCallback  KEYWORD2
 getNUS  KEYWORD2
+beginOTA	KEYWORD2
+getOTA	KEYWORD2
+checkAndHandleRollback	KEYWORD2
+confirmValid	KEYWORD2
+getRunningSlotLabel	KEYWORD2
+getBootAttemptCount	KEYWORD2
+isRunningSlotConfirmed	KEYWORD2
+setRecoveryButtonPin	KEYWORD2
 isPlayerLedReceived	KEYWORD2
 getPlayerLedIndex	KEYWORD2
 

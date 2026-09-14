@@ -1,0 +1,11 @@
+# Custom partition table for BleOTA: factory + two OTA slots + otadata, sized
+# for 4MB flash (esp32dev/esp32c3-devkitc-02 are natively 4MB; esp32-s3-devkitc-1
+# is 8MB and just leaves the trailing half unused). See ../../BleOTA.md.
+#
+# Name,     Type, SubType,  Offset,   Size,     Comment
+nvs,        data, nvs,      0x9000,   0x5000,
+otadata,    data, ota,      0xE000,   0x2000,
+factory,    app,  factory,  0x10000,  0x140000,
+ota_0,      app,  ota_0,    0x150000, 0x140000,
+ota_1,      app,  ota_1,    0x290000, 0x140000,
+spiffs,     data, spiffs,   0x3D0000, 0x30000,

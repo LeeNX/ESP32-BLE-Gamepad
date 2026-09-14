@@ -74,8 +74,10 @@ BleGamepad::BleGamepad(std::string deviceName, std::string deviceManufacturer, u
   _chargingState(0),
   _powerLevel(0),
   nusInitialized(false),
+  otaInitialized(false),
   pServer(nullptr),
   nus(nullptr),
+  ota(nullptr),
   hid(0),
   pCharacteristic_Power_State(0),
   configuration()
@@ -2414,7 +2416,25 @@ void BleGamepad::sendDataOverNUS(const uint8_t* data, size_t length)
   }
 }
 
-void BleGamepad::setNUSDataReceivedCallback(void (*callback)(const uint8_t* data, size_t length)) 
+void BleGamepad::beginOTA()
+{
+    if (!this->otaInitialized)
+    {
+        while(!NimBLEDevice::isInitialized ()){}        // Wait until the server is initialized
+        while(NimBLEDevice::getServer() == nullptr){}   // Ensure pointer to server is actually valid
+
+        ota = new BleOTA(NimBLEDevice::getServer()); // Pass the existing BLE server
+        ota->begin();
+        otaInitialized = true;
+    }
+}
+
+BleOTA* BleGamepad::getOTA()
+{
+    return ota;
+}
+
+void BleGamepad::setNUSDataReceivedCallback(void (*callback)(const uint8_t* data, size_t length))
 {
   if (nus) 
   {

@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ESP32-BLE-Gamepad OTA</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #f7f7f8;
+    --panel: #ffffff;
+    --text: #1c1c1f;
+    --muted: #6b6b73;
+    --border: #dcdce0;
+    --accent: #3b6bda;
+    --accent-text: #ffffff;
+    --ok: #1f8a4c;
+    --err: #c0392b;
+    --track: #e8e8ec;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #17181c;
+      --panel: #212227;
+      --text: #ececef;
+      --muted: #9a9aa2;
+      --border: #34353b;
+      --accent: #6d93e8;
+      --accent-text: #10131a;
+      --ok: #4cbf7d;
+      --err: #e0685c;
+      --track: #2c2d33;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    padding: 32px 16px 64px;
+  }
+  main {
+    max-width: 560px;
+    margin: 0 auto;
+  }
+  h1 {
+    font-size: 18px;
+    margin: 0 0 4px;
+  }
+  p.sub {
+    color: var(--muted);
+    margin: 0 0 24px;
+  }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px;
+    margin-bottom: 16px;
+  }
+  .row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  button {
+    font: inherit;
+    padding: 8px 16px;
+    border-radius: 7px;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    color: var(--text);
+    cursor: pointer;
+  }
+  button.primary {
+    background: var(--accent);
+    color: var(--accent-text);
+    border-color: var(--accent);
+  }
+  button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  label.check {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  dl {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 4px 12px;
+    margin: 0;
+    font-size: 13px;
+  }
+  dt { color: var(--muted); }
+  dd { margin: 0; }
+  .progress-track {
+    height: 8px;
+    border-radius: 4px;
+    background: var(--track);
+    overflow: hidden;
+    margin: 12px 0 6px;
+  }
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--accent);
+    transition: width 0.15s ease;
+  }
+  .status-line {
+    font-size: 13px;
+    color: var(--muted);
+    min-height: 18px;
+  }
+  .status-line.err { color: var(--err); }
+  .status-line.ok { color: var(--ok); }
+  input[type="file"] {
+    font: inherit;
+    color: var(--text);
+  }
+  code {
+    background: var(--track);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 12px;
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>ESP32-BLE-Gamepad — OTA update</h1>
+  <p class="sub">Web Bluetooth client for the <code>BleOTA</code> service. See <code>BleOTA.md</code> in the library repo for the protocol this talks.</p>
+
+  <div class="panel" id="requirementsPanel">
+    <div id="unsupportedNotice" hidden class="status-line err">
+      This browser doesn't support Web Bluetooth. Use a recent Chrome or Edge, over HTTPS or localhost.
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="row">
+      <button id="connectBtn" class="primary">Connect</button>
+      <button id="disconnectBtn" disabled>Disconnect</button>
+      <label class="check">
+        <input type="checkbox" id="acceptAllDevices">
+        Show all Bluetooth devices (use if the device doesn't appear when filtering)
+      </label>
+    </div>
+    <div class="status-line" id="connectionStatus">Not connected.</div>
+    <dl id="deviceInfo" hidden style="margin-top:10px">
+      <dt>Running slot</dt><dd id="infoSlot">—</dd>
+      <dt>Confirmed</dt><dd id="infoConfirmed">—</dd>
+      <dt>Boot attempts</dt><dd id="infoAttempts">—</dd>
+      <dt>Negotiated MTU</dt><dd id="infoMtu">—</dd>
+    </dl>
+  </div>
+
+  <div class="panel">
+    <div class="row">
+      <input type="file" id="fileInput" accept=".bin" disabled>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="status-line" id="flashStatus"></div>
+    <div class="row" style="margin-top:12px">
+      <button id="flashBtn" class="primary" disabled>Flash</button>
+      <button id="abortBtn" disabled>Abort</button>
+      <button id="rebootBtn" disabled>Reboot into new image</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="row">
+      <button id="recoveryBtn" disabled>Force factory recovery mode</button>
+    </div>
+    <div class="status-line">Reboots into the never-OTA-written <code>factory</code> partition. Only useful if this image is misbehaving and you want to re-flash from a known-good recovery image.</div>
+  </div>
+</main>
+
+<script>
+"use strict";
+
+const OTA_SERVICE_UUID = "56d794fe-92e6-4227-8570-08eb990b4648";
+const OTA_CONTROL_UUID = "4a0b7397-e27a-40c6-b8a0-2ae63eb2d5df";
+const OTA_DATA_UUID = "28afb7ac-af3e-4e53-a58f-2fef9e5ad51b";
+const OTA_STATUS_UUID = "f2c7832e-1e92-42b2-8d84-540b7db3979b";
+
+const OP_BEGIN = 0x01, OP_END = 0x03, OP_REBOOT = 0x04, OP_ABORT = 0x05,
+      OP_CONFIRM_VALID = 0x06, OP_ENTER_RECOVERY = 0x07, OP_GET_INFO = 0x08;
+
+const STATE_IDLE = 0, STATE_RECEIVING = 1, STATE_VALIDATING = 2, STATE_READY_TO_REBOOT = 3,
+      STATE_REBOOTING = 4, STATE_ERROR = 5, STATE_INFO = 6, STATE_CONFIRMED = 7;
+
+const ERROR_NAMES = {
+  1: "Size mismatch", 2: "Hash mismatch", 3: "Flash write failed", 4: "No free partition",
+  5: "Update already in progress", 6: "Update not started", 7: "Image invalid (failed ESP-IDF validation)",
+  8: "Image too large for the target partition", 9: "Bad request",
+};
+
+const RECOVERY_MAGIC = 0x4F544152; // "OTAR"
+const DEFAULT_CHUNK_SIZE = 180; // conservative fallback until GET_INFO reports the real negotiated MTU
+
+let device = null, server = null, control = null, data = null, status = null;
+let negotiatedMtu = 0;
+let pendingBeginEnd = null; // {resolve, reject} for the in-flight BEGIN/END/GET_INFO round-trip
+
+const el = (id) => document.getElementById(id);
+const connectBtn = el("connectBtn"), disconnectBtn = el("disconnectBtn"), acceptAllDevices = el("acceptAllDevices");
+const connectionStatus = el("connectionStatus"), deviceInfo = el("deviceInfo");
+const infoSlot = el("infoSlot"), infoConfirmed = el("infoConfirmed"), infoAttempts = el("infoAttempts"), infoMtu = el("infoMtu");
+const fileInput = el("fileInput"), flashBtn = el("flashBtn"), abortBtn = el("abortBtn"), rebootBtn = el("rebootBtn"), recoveryBtn = el("recoveryBtn");
+const progressFill = el("progressFill"), flashStatus = el("flashStatus");
+
+if (!navigator.bluetooth) {
+  el("unsupportedNotice").hidden = false;
+  connectBtn.disabled = true;
+}
+
+function setFlashStatus(text, kind) {
+  flashStatus.textContent = text;
+  flashStatus.className = "status-line" + (kind ? " " + kind : "");
+}
+
+function le32(view, offset) { return view.getUint32(offset, true); }
+function le16(view, offset) { return view.getUint16(offset, true); }
+
+connectBtn.addEventListener("click", async () => {
+  try {
+    const options = acceptAllDevices.checked
+      ? { acceptAllDevices: true, optionalServices: [OTA_SERVICE_UUID] }
+      : { filters: [{ services: [OTA_SERVICE_UUID] }] };
+    device = await navigator.bluetooth.requestDevice(options);
+    device.addEventListener("gattserverdisconnected", onDisconnected);
+
+    connectionStatus.textContent = "Connecting to " + (device.name || "device") + "…";
+    server = await device.gatt.connect();
+    const service = await server.getPrimaryService(OTA_SERVICE_UUID);
+    control = await service.getCharacteristic(OTA_CONTROL_UUID);
+    data = await service.getCharacteristic(OTA_DATA_UUID);
+    status = await service.getCharacteristic(OTA_STATUS_UUID);
+
+    await status.startNotifications();
+    status.addEventListener("characteristicvaluechanged", onStatusNotify);
+
+    connectionStatus.textContent = "Connected to " + (device.name || "device") + ". Requesting device info…";
+    // First write to an encrypted characteristic -- this is what triggers OS-level
+    // bonding on Chrome/Edge if the device isn't already paired.
+    await sendControl(OP_GET_INFO);
+
+    connectBtn.disabled = true;
+    disconnectBtn.disabled = false;
+    fileInput.disabled = false;
+    recoveryBtn.disabled = false;
+  } catch (err) {
+    connectionStatus.textContent = "Connect failed: " + err.message;
+    connectionStatus.className = "status-line err";
+  }
+});
+
+disconnectBtn.addEventListener("click", () => {
+  if (device && device.gatt.connected) device.gatt.disconnect();
+});
+
+function onDisconnected() {
+  connectionStatus.textContent = "Disconnected.";
+  connectionStatus.className = "status-line";
+  deviceInfo.hidden = true;
+  connectBtn.disabled = false;
+  disconnectBtn.disabled = true;
+  fileInput.disabled = true;
+  flashBtn.disabled = true;
+  abortBtn.disabled = true;
+  rebootBtn.disabled = true;
+  recoveryBtn.disabled = true;
+  negotiatedMtu = 0;
+  control = data = status = server = null;
+}
+
+async function sendControl(opcode, payload) {
+  const buf = new Uint8Array(1 + (payload ? payload.length : 0));
+  buf[0] = opcode;
+  if (payload) buf.set(payload, 1);
+  await control.writeValueWithResponse(buf);
+}
+
+function onStatusNotify(event) {
+  const view = event.target.value;
+  const state = view.getUint8(0);
+
+  switch (state) {
+    case STATE_INFO: {
+      const labelBytes = new Uint8Array(view.buffer, view.byteOffset + 1, 16);
+      let label = "";
+      for (const b of labelBytes) { if (b === 0) break; label += String.fromCharCode(b); }
+      const confirmed = view.getUint8(17);
+      const attempts = view.getUint8(18);
+      negotiatedMtu = le16(view, 19);
+
+      infoSlot.textContent = label || "(unknown)";
+      infoConfirmed.textContent = confirmed ? "yes" : "no";
+      infoAttempts.textContent = String(attempts);
+      infoMtu.textContent = negotiatedMtu ? String(negotiatedMtu) : "(not yet reported)";
+      deviceInfo.hidden = false;
+      connectionStatus.textContent = "Connected to " + (device.name || "device") + ".";
+      connectionStatus.className = "status-line ok";
+      break;
+    }
+    case STATE_RECEIVING: {
+      const written = le32(view, 1), total = le32(view, 5);
+      const pct = total ? Math.round((written / total) * 100) : 0;
+      progressFill.style.width = pct + "%";
+      setFlashStatus("Sending… " + written + " / " + total + " bytes (" + pct + "%)");
+      break;
+    }
+    case STATE_VALIDATING:
+      setFlashStatus("Validating image…");
+      break;
+    case STATE_READY_TO_REBOOT:
+      setFlashStatus("Flashed and validated. Ready to reboot.", "ok");
+      progressFill.style.width = "100%";
+      rebootBtn.disabled = false;
+      flashBtn.disabled = true;
+      abortBtn.disabled = true;
+      if (pendingBeginEnd) { pendingBeginEnd.resolve(); pendingBeginEnd = null; }
+      break;
+    case STATE_REBOOTING:
+      setFlashStatus("Rebooting — connection will drop now.", "ok");
+      break;
+    case STATE_IDLE:
+      setFlashStatus("Idle.");
+      break;
+    case STATE_CONFIRMED:
+      setFlashStatus("Device confirmed this image valid.", "ok");
+      break;
+    case STATE_ERROR: {
+      const code = view.getUint8(1);
+      const msg = ERROR_NAMES[code] || ("Unknown error " + code);
+      setFlashStatus("Error: " + msg, "err");
+      flashBtn.disabled = false;
+      abortBtn.disabled = true;
+      if (pendingBeginEnd) { pendingBeginEnd.reject(new Error(msg)); pendingBeginEnd = null; }
+      break;
+    }
+  }
+}
+
+async function sha256(buffer) {
+  const digest = await crypto.subtle.digest("SHA-256", buffer);
+  return new Uint8Array(digest);
+}
+
+flashBtn.addEventListener("click", async () => {
+  const file = fileInput.files[0];
+  if (!file) { setFlashStatus("Pick a .bin file first.", "err"); return; }
+
+  flashBtn.disabled = true;
+  abortBtn.disabled = false;
+  rebootBtn.disabled = true;
+  progressFill.style.width = "0%";
+  setFlashStatus("Hashing image…");
+
+  try {
+    const buffer = await file.arrayBuffer();
+    const hash = await sha256(buffer);
+
+    const beginPayload = new Uint8Array(4 + 32 + 1);
+    new DataView(beginPayload.buffer).setUint32(0, buffer.byteLength, true);
+    beginPayload.set(hash, 4);
+    beginPayload[36] = 0; // versionLen -- not tracked by this client
+
+    setFlashStatus("Starting update…");
+    await sendControl(OP_BEGIN, beginPayload);
+
+    const chunkSize = negotiatedMtu > 3 ? negotiatedMtu - 3 : DEFAULT_CHUNK_SIZE;
+    const bytes = new Uint8Array(buffer);
+    for (let offset = 0; offset < bytes.length; offset += chunkSize) {
+      const chunk = bytes.subarray(offset, Math.min(offset + chunkSize, bytes.length));
+      await data.writeValueWithoutResponse(chunk);
+    }
+
+    setFlashStatus("Finishing…");
+    await new Promise((resolve, reject) => {
+      pendingBeginEnd = { resolve, reject };
+      sendControl(OP_END).catch(reject);
+    });
+  } catch (err) {
+    setFlashStatus("Flash failed: " + err.message, "err");
+    flashBtn.disabled = false;
+    abortBtn.disabled = true;
+  }
+});
+
+abortBtn.addEventListener("click", async () => {
+  try {
+    await sendControl(OP_ABORT);
+  } finally {
+    flashBtn.disabled = false;
+    abortBtn.disabled = true;
+    rebootBtn.disabled = true;
+    progressFill.style.width = "0%";
+  }
+});
+
+rebootBtn.addEventListener("click", async () => {
+  rebootBtn.disabled = true;
+  await sendControl(OP_REBOOT);
+});
+
+recoveryBtn.addEventListener("click", async () => {
+  if (!confirm("Reboot into factory recovery mode now?")) return;
+  const magic = new Uint8Array(4);
+  new DataView(magic.buffer).setUint32(0, RECOVERY_MAGIC, true);
+  await sendControl(OP_ENTER_RECOVERY, magic);
+});
+</script>
+</body>
+</html>
